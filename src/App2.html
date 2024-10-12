@@ -1,85 +1,65 @@
-<script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+  
+  <v-sheet class="bg-deep-purple pa-12" rounded style="min-height: 100vh;" >
+    <v-card class="mx-auto px-6 py-8" max-width="344">
+      <v-form v-model="form" @submit.prevent="onSubmit">
+        <v-text-field
+          v-model="email"
+          :readonly="loading"
+          :rules="[required]"
+          class="mb-2"
+          label="Email"
+          clearable
+        ></v-text-field>
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+        <v-text-field
+          v-model="password"
+          :readonly="loading"
+          :rules="[required]"
+          label="Password"
+          placeholder="Enter your password"
+          clearable
+        ></v-text-field>
 
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
-  </header>
+        <br />
 
-  <RouterView />
+        <v-btn
+          :disabled="!form"
+          :loading="loading"
+          color="success"
+          size="large"
+          type="submit"
+          variant="elevated"
+          block
+        >
+          Sign In
+        </v-btn>
+      </v-form>
+    </v-card>
+  </v-sheet>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
+<script>
+export default {
+  data: () => ({
+    form: false,
+    email: null,
+    password: null,
+    loading: false,
+  }),
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
+  methods: {
+    onSubmit() {
+      if (!this.form) return;
 
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
+      this.loading = true;
 
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
+      setTimeout(() => (this.loading = false), 2000);
+    },
+    required(v) {
+      return !!v || "Field is required";
+    },
+  },
+};
+</script>
 
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
-}
-</style>
