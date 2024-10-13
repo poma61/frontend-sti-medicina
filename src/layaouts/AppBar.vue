@@ -1,12 +1,11 @@
 <template>
     <v-app-bar app color="blue-darken-3" height="50" :elevation="10">
         <v-app-bar-nav-icon @click.stop="openByCloseNavigationDrawerChild"></v-app-bar-nav-icon>
-        <v-toolbar-title>Confibol</v-toolbar-title>
+        <v-toolbar-title>InertAI Tutor</v-toolbar-title>
         <v-spacer></v-spacer>
 
         <!-- Otros elementos del app bar si es necesario -->
-        <v-btn icon="mdi-bell-alert-outline"
-            class="animate__animated animate__delay-2s animate__infinite animate__headShake"></v-btn>
+        <v-btn icon="mdi-bell-alert-outline"></v-btn>
 
         <v-menu v-model="menu" :close-on-content-click="false" location="bottom" class="float-sm-end">
 
@@ -18,7 +17,7 @@
                 <v-list>
                     <v-list-item :prepend-avatar="app.BASE_URL + props.p_user.foto_image_path"
                         :title="`${props.p_user.nombres} ${props.p_user.apellido_paterno} ${props.p_user.apellido_materno}`"
-                        :subtitle="`Rol: ${props.p_user.rol_name}`">
+                        :subtitle="`Rol:`">
                     </v-list-item>
                 </v-list>
 
@@ -71,7 +70,7 @@ import { ref } from 'vue';
 import { defineEmits, defineProps } from 'vue';
 import { useAuth } from '@/stores/useAuth';
 import { useRouter } from 'vue-router';
-import toastify from '@/composables/toastify';
+import { toastError } from '@/composables/toastify';
 import app from '@/config/app';
 const loading_logout = ref(false);
 
@@ -91,13 +90,13 @@ const authLogout = () => {
     loading_logout.value = true;
     setTimeout(async () => {
         const use_auth = useAuth();
-        const response = await use_auth.logout();
+        const response = await use_auth.logoutUser();
         loading_logout.value = false;
 
         if (response.status) {
             router.push('/');
         } else {
-            toastify('danger', response.message);
+            toastError('danger', response.message);
         }
     }, 200);
 }

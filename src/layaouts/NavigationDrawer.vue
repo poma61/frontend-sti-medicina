@@ -2,7 +2,7 @@
     <v-app>
         <v-navigation-drawer v-model="drawer" app class="as-navigation-drawer">
             <div class="d-flex flex-column justify-center align-center">
-                <v-list-item :prepend-avatar="require('@/assets/images/logo-empresa.jpeg')" title="ADMINISTRACION" nav>
+                <v-list-item :prepend-avatar="logo" title="ADMINISTRACION" nav>
                 </v-list-item>
             </div>
             <v-divider></v-divider>
@@ -67,6 +67,8 @@ import { ref, onMounted, nextTick } from 'vue';
 import { useAuth } from '@/stores/useAuth';
 import toastify from '@/composables/toastify';
 import app from '@/config/app';
+import logo from '@/assets/images/logo-medicina.png'
+
 const route = useRoute();
 
 //data
