@@ -1,7 +1,43 @@
+
+<script setup>
+import { ref } from 'vue';
+import { defineEmits, defineProps } from 'vue';
+import { useAuth } from '@/stores/useAuth';
+import { useRouter } from 'vue-router';
+import { toastError } from '@/composables/toastify';
+import app from '@/config/app';
+const loading_logout = ref(false);
+
+//data
+const emit = defineEmits(['byHiddenNavigationDrawerEmit']);
+const props = defineProps(['p_user']);
+const menu = ref(false);
+const dialog = ref(false);
+const router = useRouter();
+
+const authLogout = () => {
+    dialog.value = false;
+    loading_logout.value = true;
+    setTimeout(async () => {
+        const use_auth = useAuth();
+        const response = await use_auth.logoutUser();
+        loading_logout.value = false;
+
+        if (response.api_status) {
+            router.push('/');
+        } else {
+            toastError(response.detail);
+        }
+    }, 200);
+}
+</script>
+
 <template>
-    <v-app-bar app color="blue-darken-3" height="50" :elevation="10">
-        <v-app-bar-nav-icon @click.stop="openByCloseNavigationDrawerChild"></v-app-bar-nav-icon>
-        <v-toolbar-title>InertAI Tutor</v-toolbar-title>
+    <v-app-bar app color="light-blue-darken-4" height="50" :elevation="10">
+        <v-app-bar-nav-icon @click.stop="emit('byHiddenNavigationDrawerEmit')"></v-app-bar-nav-icon>
+        <v-toolbar-title>
+            <v-icon icon="mdi-account-check-outline" color="success"></v-icon>
+        </v-toolbar-title>
         <v-spacer></v-spacer>
 
         <!-- Otros elementos del app bar si es necesario -->
@@ -15,9 +51,9 @@
 
             <v-card min-width="250">
                 <v-list>
-                    <v-list-item :prepend-avatar="app.BASE_URL + props.p_user.foto_image_path"
+                    <v-list-item :prepend-avatar="app.BASE_URL + props.p_user.picture"
                         :title="`${props.p_user.nombres} ${props.p_user.apellido_paterno} ${props.p_user.apellido_materno}`"
-                        :subtitle="`Rol:`">
+                        subtitle="Estudiante">
                     </v-list-item>
                 </v-list>
 
@@ -64,40 +100,3 @@
         </div>
     </v-overlay>
 </template>
-
-<script setup>
-import { ref } from 'vue';
-import { defineEmits, defineProps } from 'vue';
-import { useAuth } from '@/stores/useAuth';
-import { useRouter } from 'vue-router';
-import { toastError } from '@/composables/toastify';
-import app from '@/config/app';
-const loading_logout = ref(false);
-
-//data
-const emit = defineEmits(['openByCloseNavigationDrawerEmit']);
-const props = defineProps(['p_user']);
-const menu = ref(false);
-const dialog = ref(false);
-const router = useRouter();
-
-const openByCloseNavigationDrawerChild = () => {
-    emit('openByCloseNavigationDrawerEmit');
-}
-
-const authLogout = () => {
-    dialog.value = false;
-    loading_logout.value = true;
-    setTimeout(async () => {
-        const use_auth = useAuth();
-        const response = await use_auth.logoutUser();
-        loading_logout.value = false;
-
-        if (response.status) {
-            router.push('/');
-        } else {
-            toastError('danger', response.message);
-        }
-    }, 200);
-}
-</script>

@@ -3,7 +3,8 @@ import { toast } from "vue3-toastify";
 const options =  {
     position: 'bottom-right',
     autoClose: 5000,
-    
+    theme: "colored",
+    hideProgressBar: true,
 }
 
 export const toastSuccess = (detail)=>{
@@ -21,3 +22,4 @@ export const toastInfo = (detail) =>{
 export const toastWarning = (detail) =>{
     toast.warning(detail,options)
 }
+

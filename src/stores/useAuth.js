@@ -49,7 +49,6 @@ export const useAuth = defineStore("useAuth", () => {
       return resolve.data;
     } catch (error) {
       if (error.response == undefined || error.response.data == undefined) {
-        console.error(error);
         return { api_status: false, detail: error + "" };
       }
       return error.response.data;
@@ -62,7 +61,6 @@ export const useAuth = defineStore("useAuth", () => {
       return resolve.data;
     } catch (error) {
       if (error.response == undefined || error.response.data == undefined) {
-        console.error(error);
         return { api_status: false, detail: error + "" };
       }
       return error.response.data;
@@ -76,15 +74,20 @@ export const useAuth = defineStore("useAuth", () => {
     return true;
   };
 
-  const updateCredentials = async (credentials) => {
+  const updateAuthUserData = async (user_auth_data) => {
     try {
-      const response = await axios.post("auth/actualizar-credenciales/", {
-        ...credentials,
-      });
+      const config = {
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'multipart/form-data'// de esta forma podemos enviar imagenes
+        }
+      }
+      const response = await axios.post("auth/user-update/", {
+        ...user_auth_data,
+      }, config);
       return response.data;
     } catch (error) {
       if (error.response == undefined || error.response.data == undefined) {
-        console.error(error);
         return { api_status: false, detail: error + "" };
       }
       return error.response.data;
@@ -104,7 +107,6 @@ export const useAuth = defineStore("useAuth", () => {
       return response.data;
     } catch (error) {
       if (error.response == undefined || error.response.data == undefined) {
-        console.error(error);
         return { api_status: false, detail: error + "" };
       }
       return error.response.data;
@@ -113,10 +115,7 @@ export const useAuth = defineStore("useAuth", () => {
 
   const verifyTokenExpiration = () => {
     const current_time_in_seconds = Math.floor(Date.now() / 1000); // Devuelve tiempo unix en milisegundos, por eso convertimos a segundos
-    if (
-      isAuthenticated() &&
-      current_time_in_seconds >= getAuthState().access_token_expiration
-    ) {
+    if (isAuthenticated() && current_time_in_seconds >= getAuthState().access_token_expiration) {
       setAuthState({
         state: false,
         access_token: "",
@@ -133,7 +132,7 @@ export const useAuth = defineStore("useAuth", () => {
     loginUser,
     userData,
     hasRole,
-    updateCredentials,
+    updateAuthUserData,
     logoutUser,
     verifyTokenExpiration,
     isAuthenticated,

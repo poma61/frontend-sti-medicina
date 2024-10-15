@@ -1,16 +1,7 @@
 <template>
   <div class="as-content">
     <div class="as-content-login">
-      <h1
-        class="text-h5 pa-5 text-center"
-        style="
-           border-bottom: 1px solid #0277bd;
-           width: 95%;
-           margin: 0px auto;
-        "
-      >
-        InternAI Tutor
-      </h1>
+      <h1 class="text-h5 pa-5 text-center is-title">InternAI Tutor</h1>
       <div class="as-login">
         <div class="info-content">
           <img :src="logo" />
@@ -18,18 +9,23 @@
         </div>
         <v-form @submit.prevent="login" class="pa-10 as-form">
           <v-text-field
+            prepend-inner-icon="mdi-account"
             v-model="user"
             :readonly="loading"
+            :rules="[required]"
             class="mb-2"
             clearable
-            label="Usuario"
+            label="Usuario"   
             placeholder="Escriba su usuario..."
             color="light-blue-darken-3"
+            @input="filterSpecialChars($event)"
           ></v-text-field>
 
           <v-text-field
+            prepend-inner-icon="mdi-lock-outline"
             v-model="password"
             :readonly="loading"
+            :rules="[required]"
             label="Contraseña"
             placeholder="Escriba su contraseña..."
             color="light-blue-darken-3"
@@ -37,17 +33,19 @@
             :type="show ? 'text' : 'password'"
             autocomplete="off"
             @click:append-inner="show = !show"
+            @input="filterSpaces($event)"
           ></v-text-field>
 
           <v-btn
             :loading="loading"
+            :disabled="!canSubmit"
             block
             color="light-blue-darken-3"
             size="large"
             type="submit"
             variant="elevated"
           >
-            Ingresar
+            <v-icon icon="mdi-arrow-right" size="30"></v-icon>
           </v-btn>
         </v-form>
       </div>
@@ -56,21 +54,19 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAuth } from "@/stores/useAuth";
-
 import logo from "@/assets/images/logo-medicina.png";
-
-import {toastError } from '@/composables/toastify';
+import { toastError } from "@/composables/toastify";
 
 // otra forma de exportar imagenes
 // const logo= new URL('@/assets/images/logo-medicina.png', import.meta.url).href
 
 const user = ref("");
 const password = ref("");
-const loading = ref(false);
-const router = useRouter();
+const loading = ref(false); // permite habilitar desabilitar los campos y la carga del btn
+const router = useRouter(); // Instancia del enrutador para navegar programaticamente
 const show = ref(false);
 //methods
 const login = () => {
@@ -82,20 +78,38 @@ const login = () => {
     if (auth_success.api_status) {
       router.push("/home");
     } else {
-       toastError(auth_success.detail);
+      toastError(auth_success.detail);
     }
     loading.value = false;
   }, 200);
 };
+
+const required = (value) => !!value || "Campo requerido.";
+
+const filterSpecialChars = (event) => {
+  const value = event.target.value;
+  const filtered_value = value.replace(/[^A-Za-z0-9]/g, ""); // Remueve caracteres especiales y espacios
+  user.value = filtered_value;
+};
+
+const filterSpaces = (event) => {
+  const value = event.target.value;
+  const filtered_value = value.replace(/\s/g, ""); // Elimina todos los espacios
+  password.value = filtered_value;
+};
+
+// Computed para habilitar o deshabilitar el botón
+const canSubmit = computed(() => {
+  return user.value.length > 0 && password.value.length > 0;
+});
 </script>
 
 <style scoped>
 .as-content {
   min-height: 100vh;
-  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-    url(@/assets/images/login-background.jpg);
+  background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+    url(@/assets/images/login-background-2.jpg);
   background-size: cover;
-  overflow: hidden !important;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -103,7 +117,7 @@ const login = () => {
 }
 
 .as-content-login {
-  background-color: rgba(255, 255, 255, 0.699);
+  background-color: rgba(255, 255, 255, 0.805);
   width: 900px;
   min-height: 400px;
   border-radius: 20px;
@@ -131,6 +145,11 @@ const login = () => {
 
 .as-form {
   width: 100%;
+}
+.is-title {
+  border-bottom: 1px solid #9b9b9b9e;
+  width: 95%;
+  margin: 0px auto;
 }
 
 /* Para dispositivos con un ancho de pantalla máximo de 1000px */
@@ -170,8 +189,6 @@ const login = () => {
   }
   .as-content-login {
     width: 300px;
-   
   }
-
 }
 </style>

@@ -4,11 +4,13 @@ import { middleware } from "@/http/middleware/middleware";
 import authVerifyTokenExpiration from "@/http/middleware/authVerifyTokenExpiration";
 import redirectIfAuthenticated from "@/http/middleware/redirectIfAuthenticated";
 import authenticate from "@/http/middleware/authenticate";
+
 // import checkRole from '@/http/middleware/checkRole';
 
 //views
 import LoginView from "@/views/LoginView.vue";
 import NotFoundView from "@/views/NotFoundView.vue";
+import ProfileView from "@/views/ProfileView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,8 +19,21 @@ const router = createRouter({
       path: "/",
       name: "n-login",
       component: LoginView,
+      meta: {
+        requireAuth: false,
+      },
+      beforeEnter: [middleware(redirectIfAuthenticated)],
+    },
+    {
+      path: "/perfil",
+      name: "n-perfil",
+      component: ProfileView,
+      meta: {
+        requireAuth: true,
+      },
       beforeEnter: [
-        middleware(redirectIfAuthenticated),
+        middleware(authVerifyTokenExpiration), // primero verifica si el token expiro
+        middleware(authenticate),
       ],
     },
     {
@@ -35,9 +50,6 @@ const router = createRouter({
     {
       path: "/home",
       name: "n-home",
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () =>
         import(/* webpackChunkName: "HomeView" */ "@/views/HomeView.vue"),
       meta: {
