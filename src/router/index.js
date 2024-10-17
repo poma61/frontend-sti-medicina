@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 
 import { middleware } from "@/http/middleware/middleware";
-import authVerifyTokenExpiration from "@/http/middleware/authVerifyTokenExpiration";
+import authTokenExpiration from "@/http/middleware/authTokenExpiration";
 import redirectIfAuthenticated from "@/http/middleware/redirectIfAuthenticated";
 import authenticate from "@/http/middleware/authenticate";
 
@@ -32,7 +32,7 @@ const router = createRouter({
         requireAuth: true,
       },
       beforeEnter: [
-        middleware(authVerifyTokenExpiration), // primero verifica si el token expiro
+       middleware(authTokenExpiration), // primero verifica si el token expiro
         middleware(authenticate),
       ],
     },
@@ -43,7 +43,7 @@ const router = createRouter({
         requireAuth: true,
       },
       beforeEnter: [
-        middleware(authVerifyTokenExpiration), // primero verifica si el token expiro
+        middleware(authTokenExpiration), // primero verifica si el token expiro
         middleware(authenticate),
       ],
     },
@@ -56,7 +56,7 @@ const router = createRouter({
         requireAuth: true,
       },
       beforeEnter: [
-        middleware(authVerifyTokenExpiration),
+        middleware(authTokenExpiration),
         middleware(authenticate),
       ],
     },

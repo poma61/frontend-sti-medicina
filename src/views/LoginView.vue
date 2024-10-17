@@ -45,7 +45,8 @@
             type="submit"
             variant="elevated"
           >
-            <v-icon icon="mdi-arrow-right" size="30"></v-icon>
+            <v-icon icon="mdi-arrow-right"></v-icon>
+            &nbsp;Ingresar
           </v-btn>
         </v-form>
       </div>

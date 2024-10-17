@@ -6,7 +6,7 @@ const LOGIN = "n-login";
 const authenticate = (to, from, next) => {
   const need_auth = to.matched.some((record) => record.meta.requireAuth);
 
-  //verificar si debemos verificar need_auth
+  //verificar si requiere autenticacion 
   if (need_auth) {
     //SI necesita autenticacion
     if (useAuth().isAuthenticated()) {

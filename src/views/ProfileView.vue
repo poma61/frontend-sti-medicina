@@ -18,7 +18,6 @@ const update_auth_user_data = ref({
   picture: ""
 });
 const form = ref(null);
-const form_valid = ref(null);
 
 const errors_field = ref({});
 const show_new_password = ref(false);
@@ -38,11 +37,6 @@ const viewImage = () => {
     };
   }
 }
-
-const validateFormRules = async () => {
-  const { valid } = await form.value.validate()
-  form_valid.value = valid
-};
 
 const filterSpecialChars = (event) => {
   const value = event.target.value;
@@ -84,7 +78,6 @@ const updateAuthUser = () => {
   loading_save.value = true // deshabilitar los campos
   setTimeout(async () => {
     const user = useAuth()
-    console.log(update_auth_user_data.value)
     const response = await user.updateAuthUserData(Object.assign({}, update_auth_user_data.value))
     loading_save.value = false //una vez procesado volvemos habilitar los campos
     if (response.api_status) {
@@ -99,11 +92,20 @@ const updateAuthUser = () => {
   }, 200)
 }
 const clear = () => {
-  form.value.reset()
+  form.value.reset() // limpiar formulario evita que salten los rules
   errors_field.value = {}
+  update_auth_user_data.value.email = "",
+  update_auth_user_data.value.user = "",
+  update_auth_user_data.value.password = "",
+  update_auth_user_data.value.new_password = "",
+  update_auth_user_data.value.confirm_new_password ="",
+  update_auth_user_data.value.picture = ""
 }
 
-const required = (v) => !!v || "Campo requerido."
+const requiredRule = [
+   (v) => !!v || "Campo requerido.",
+ ]
+
 
 //*********** computed
 const showErrorsFields = computed(() => {
@@ -131,7 +133,7 @@ const passwordRules = [
 // Validaciones para la imagen
 const imageRules = [
   value => {
-    return !value || !value.length || (value[0].size < 2000000) || 'Avatar size should be less than 2 MB!'
+    return !value || !value.length || (value[0].size < 2 * 1024 * 1024 ) || 'El tamaño de la imagen debe ser inferior a 2 MB.'
   },
 ]
 
@@ -200,7 +202,7 @@ onMounted(() => {
           </tbody>
         </v-table>
 
-        <v-form ref="form" @submit.prevent="updateAuthUser" class="as-item-profile" @change="validateFormRules">
+        <v-form ref="form" @submit.prevent="updateAuthUser" class="as-item-profile" >
           <h6 class="text-h6 text-center my-2">Datos de usuario</h6>
 
           <v-text-field v-model="update_auth_user_data.email" :readonly="loading_save" class="mb-3" clearable
@@ -209,13 +211,13 @@ onMounted(() => {
 
           <v-text-field v-model="update_auth_user_data.user" :readonly="loading_save" class="mb-3" clearable
             prepend-inner-icon="mdi-account" label="Usuario" placeholder="Escriba su usuario..." color="blue-darken-3"
-            :error-messages="showErrorsFields('user')" :rules="[required]" @input="filterSpecialChars($event)" />
+            :error-messages="showErrorsFields('user')" :rules="requiredRule" @input="filterSpecialChars($event)" />
 
           <v-text-field v-model="update_auth_user_data.password" class="mb-3" :readonly="loading_save"
             label="Contraseña actual" placeholder="Escriba su contraseña..." color="blue-darken-3"
             prepend-inner-icon="mdi-lock" :append-inner-icon="show_old_password ? 'mdi-eye' : 'mdi-eye-off'"
             :type="show_old_password ? 'text' : 'password'" autocomplete="off"
-            @click:append-inner="show_old_password = !show_old_password" :rules="[required]"
+            @click:append-inner="show_old_password = !show_old_password" :rules="requiredRule"
             :error-messages="showErrorsFields('password')" @input="filterSpaces($event, 'password')" />
 
           <v-text-field v-model="update_auth_user_data.new_password" class="mb-3" :readonly="loading_save"
@@ -240,7 +242,7 @@ onMounted(() => {
 
           <div class="text-center">
             <v-btn :loading="loading_save" color="blue-darken-3" type="submit" variant="elevated"
-              :disabled="!form_valid">
+              >
               <v-icon icon="mdi-checkbox-marked" />&nbsp;Actualizar credenciales
             </v-btn>
           </div>
