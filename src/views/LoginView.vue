@@ -1,59 +1,3 @@
-<template>
-  <div class="as-content">
-    <div class="as-content-login">
-      <h1 class="text-h5 pa-5 text-center is-title">InternAI Tutor</h1>
-      <div class="as-login">
-        <div class="info-content">
-          <img :src="logo" />
-          <p class="text-center px-4">Sistema Tutor Inteligente</p>
-        </div>
-        <v-form @submit.prevent="login" class="pa-10 as-form">
-          <v-text-field
-            prepend-inner-icon="mdi-account"
-            v-model="user"
-            :readonly="loading"
-            :rules="[required]"
-            class="mb-2"
-            clearable
-            label="Usuario"   
-            placeholder="Escriba su usuario..."
-            color="light-blue-darken-3"
-            @input="filterSpecialChars($event)"
-          ></v-text-field>
-
-          <v-text-field
-            prepend-inner-icon="mdi-lock-outline"
-            v-model="password"
-            :readonly="loading"
-            :rules="[required]"
-            label="Contraseña"
-            placeholder="Escriba su contraseña..."
-            color="light-blue-darken-3"
-            :append-inner-icon="show ? 'mdi-eye' : 'mdi-eye-off'"
-            :type="show ? 'text' : 'password'"
-            autocomplete="off"
-            @click:append-inner="show = !show"
-            @input="filterSpaces($event)"
-          ></v-text-field>
-
-          <v-btn
-            :loading="loading"
-            :disabled="!canSubmit"
-            block
-            color="light-blue-darken-3"
-            size="large"
-            type="submit"
-            variant="elevated"
-          >
-            <v-icon icon="mdi-arrow-right"></v-icon>
-            &nbsp;Ingresar
-          </v-btn>
-        </v-form>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
@@ -105,6 +49,37 @@ const canSubmit = computed(() => {
 });
 </script>
 
+
+<template>
+  <div class="as-content">
+    <div class="as-content-login">
+      <h1 class="text-h5 pa-5 text-center is-title">InternAI Tutor</h1>
+      <div class="as-login">
+        <div class="info-content">
+          <img :src="logo" />
+          <p class="text-center px-4">Sistema Tutor Inteligente</p>
+        </div>
+        <v-form @submit.prevent="login" class="pa-10 as-form">
+          <v-text-field prepend-inner-icon="mdi-account" v-model="user" :readonly="loading" :rules="[required]"
+            class="mb-2" clearable label="Usuario" placeholder="Escriba su usuario..." color="light-blue-darken-3"
+            @input="filterSpecialChars($event)"></v-text-field>
+
+          <v-text-field prepend-inner-icon="mdi-lock-outline" v-model="password" :readonly="loading" :rules="[required]"
+            label="Contraseña" placeholder="Escriba su contraseña..." color="light-blue-darken-3"
+            :append-inner-icon="show ? 'mdi-eye' : 'mdi-eye-off'" :type="show ? 'text' : 'password'" autocomplete="off"
+            @click:append-inner="show = !show" @input="filterSpaces($event)"></v-text-field>
+
+          <v-btn :loading="loading" :disabled="!canSubmit" block color="light-blue-darken-3" size="large" type="submit"
+            variant="elevated">
+            <v-icon icon="mdi-arrow-right"></v-icon>
+            &nbsp;Ingresar
+          </v-btn>
+        </v-form>
+      </div>
+    </div>
+  </div>
+</template>
+
 <style scoped>
 .as-content {
   min-height: 100vh;
@@ -147,6 +122,7 @@ const canSubmit = computed(() => {
 .as-form {
   width: 100%;
 }
+
 .is-title {
   border-bottom: 1px solid #9b9b9b9e;
   width: 95%;
@@ -165,6 +141,7 @@ const canSubmit = computed(() => {
   .as-login {
     flex-direction: column;
   }
+
   .as-content-login {
     width: 500px;
   }
@@ -175,10 +152,12 @@ const canSubmit = computed(() => {
   .as-login {
     flex-direction: column;
   }
+
   .info-content img {
     width: 150px;
     height: 150px;
   }
+
   .as-content-login {
     width: 400px;
   }
@@ -188,6 +167,7 @@ const canSubmit = computed(() => {
   .as-login {
     flex-direction: column;
   }
+
   .as-content-login {
     width: 300px;
   }

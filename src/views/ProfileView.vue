@@ -15,11 +15,11 @@ const update_auth_user_data = ref({
   password: "",
   new_password: "",
   confirm_new_password: "",
-  picture: ""
+  picture: {}
 });
 const form = ref(null);
 
-const errors_field = ref({});
+const serializer_errors_validate = ref({});
 const show_new_password = ref(false);
 const show_old_password = ref(false);
 const show_confirm_new_password = ref(false);
@@ -30,12 +30,12 @@ const viewImage = () => {
   const archivo = update_auth_user_data.value.picture;
 
   if (archivo) {
-    const reader = new FileReader();
-    reader.readAsDataURL(archivo);
+    const reader = new FileReader()
+    reader.readAsDataURL(archivo)
     reader.onload = (e) => {
-      src_view_picture.value = e.target.result;
-    };
-  }
+      src_view_picture.value = e.target.result
+    }
+  }  
 }
 
 const filterSpecialChars = (event) => {
@@ -65,9 +65,9 @@ const userAuthData = () => {
     const response = await auth.userData();
     loading_profile.value = false;
     if (response.api_status) {
-      is_user.value = response.is_data;
-      update_auth_user_data.value.user = response.is_data.user;
-      update_auth_user_data.value.email = response.is_data.email;
+      is_user.value = response.payload;
+      update_auth_user_data.value.user = response.payload.user;
+      update_auth_user_data.value.email = response.payload.email;
     } else {
       toastError(response.detail);
     }
@@ -85,7 +85,7 @@ const updateAuthUser = () => {
       clear();
     } else {
       if (response.serializer_errors != undefined) {
-        errors_field.value = response.serializer_errors
+        serializer_errors_validate.value = response.serializer_errors
       }
       toastError(response.detail)
     }
@@ -93,25 +93,23 @@ const updateAuthUser = () => {
 }
 const clear = () => {
   form.value.reset() // limpiar formulario evita que salten los rules
-  errors_field.value = {}
+  serializer_errors_validate.value = {}
   update_auth_user_data.value.email = "",
   update_auth_user_data.value.user = "",
   update_auth_user_data.value.password = "",
   update_auth_user_data.value.new_password = "",
   update_auth_user_data.value.confirm_new_password ="",
-  update_auth_user_data.value.picture = ""
+  update_auth_user_data.value.picture = {}
 }
 
 const requiredRule = [
    (v) => !!v || "Campo requerido.",
  ]
-
-
 //*********** computed
-const showErrorsFields = computed(() => {
+const showSerializerErrors = computed(() => {
   return function (property) {
-    if (errors_field.value[property]) {
-      return errors_field.value[property][0]
+    if (serializer_errors_validate.value[property]) {
+      return serializer_errors_validate.value[property][0]
     }
     return ""
   }
@@ -207,25 +205,25 @@ onMounted(() => {
 
           <v-text-field v-model="update_auth_user_data.email" :readonly="loading_save" class="mb-3" clearable
             prepend-inner-icon="mdi-email" label="Email" placeholder="Escriba su email..." color="blue-darken-3"
-            :error-messages="showErrorsFields('email')" :rules="emailRules" />
+            :error-messages="showSerializerErrors('email')" :rules="emailRules" />
 
           <v-text-field v-model="update_auth_user_data.user" :readonly="loading_save" class="mb-3" clearable
             prepend-inner-icon="mdi-account" label="Usuario" placeholder="Escriba su usuario..." color="blue-darken-3"
-            :error-messages="showErrorsFields('user')" :rules="requiredRule" @input="filterSpecialChars($event)" />
+            :error-messages="showSerializerErrors('user')" :rules="requiredRule" @input="filterSpecialChars($event)" />
 
           <v-text-field v-model="update_auth_user_data.password" class="mb-3" :readonly="loading_save"
             label="Contraseña actual" placeholder="Escriba su contraseña..." color="blue-darken-3"
             prepend-inner-icon="mdi-lock" :append-inner-icon="show_old_password ? 'mdi-eye' : 'mdi-eye-off'"
             :type="show_old_password ? 'text' : 'password'" autocomplete="off"
             @click:append-inner="show_old_password = !show_old_password" :rules="requiredRule"
-            :error-messages="showErrorsFields('password')" @input="filterSpaces($event, 'password')" />
+            :error-messages="showSerializerErrors('password')" @input="filterSpaces($event, 'password')" />
 
           <v-text-field v-model="update_auth_user_data.new_password" class="mb-3" :readonly="loading_save"
             prepend-inner-icon="mdi-lock" label="Nueva contraseña" placeholder="Escriba su contraseña..."
             color="blue-darken-3" :append-inner-icon="show_new_password ? 'mdi-eye' : 'mdi-eye-off'"
             :type="show_new_password ? 'text' : 'password'" autocomplete="off"
             @click:append-inner="show_new_password = !show_new_password"
-            :error-messages="showErrorsFields('new_password')" :rules="passwordRules"
+            :error-messages="showSerializerErrors('new_password')" :rules="passwordRules"
             @input="filterSpaces($event, 'new_password')" />
 
           <v-text-field v-model="update_auth_user_data.confirm_new_password" class="mb-3" :readonly="loading_save"
@@ -233,12 +231,12 @@ onMounted(() => {
             color="blue-darken-3" :append-inner-icon="show_confirm_new_password ? 'mdi-eye' : 'mdi-eye-off'"
             :type="show_confirm_new_password ? 'text' : 'password'" autocomplete="off"
             @click:append-inner=" show_confirm_new_password = !show_confirm_new_password" :rules="confirmPasswordRule"
-            :error-messages="showErrorsFields('confirm_new_password')"
+            :error-messages="showSerializerErrors('confirm_new_password')"
             @input="filterSpaces($event, 'confirm_new_password')" />
 
           <v-file-input v-model="update_auth_user_data.picture" accept="image/jpeg, image/jpg, image/png" class="mb-3"
-            label="Foto" prepend-icon="mdi-camera" :error-messages="showErrorsFields('picture')"
-            :readonly="loading_save" @change="viewImage" @click:clear="clearFileInput" :rules="imageRules" show-size />
+            label="Foto" prepend-icon="mdi-camera" :error-messages="showSerializerErrors('picture')"
+            :readonly="loading_save" @change="viewImage"  :rules="imageRules" show-size />
 
           <div class="text-center">
             <v-btn :loading="loading_save" color="blue-darken-3" type="submit" variant="elevated"

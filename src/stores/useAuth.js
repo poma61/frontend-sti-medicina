@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import {axiosSecure, axiosPublic} from "@/http/connection/axiosHTTP";
+import { axiosSecure, axiosPublic } from "@/http/connection/axiosHTTP";
 import { ref } from "vue";
 
 export const useAuth = defineStore("useAuth", () => {
@@ -83,7 +83,7 @@ export const useAuth = defineStore("useAuth", () => {
       if (error.response == undefined || error.response.data == undefined) {
         return { api_status: false, detail: error + "" };
       }
-       return error.response.data;
+      return error.response.data;
     }
   }
 
@@ -128,7 +128,7 @@ export const useAuth = defineStore("useAuth", () => {
 
   const logoutUser = async () => {
     try {
-      const response = await axiosSecure.post("auth/logout/",{
+      const response = await axiosSecure.post("auth/logout/", {
         refresh_token: getAuthState().refresh_token
       });
       if (response.data.api_status) {
@@ -159,6 +159,9 @@ export const useAuth = defineStore("useAuth", () => {
         access_token_expiration: 0,
         refresh_token_expiration: 0,
       });
+      return true
+    } else {
+      return false
     }
   }
 

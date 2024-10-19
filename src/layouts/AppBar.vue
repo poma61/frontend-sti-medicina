@@ -1,4 +1,3 @@
-
 <script setup>
 import { ref } from 'vue';
 import { defineEmits, defineProps } from 'vue';
@@ -36,12 +35,16 @@ const authLogout = () => {
     <v-app-bar app color="light-blue-darken-4" height="50" :elevation="10">
         <v-app-bar-nav-icon @click.stop="emit('byHiddenNavigationDrawerEmit')"></v-app-bar-nav-icon>
         <v-toolbar-title>
-            <v-icon icon="mdi-account-check-outline" color="success"></v-icon>
+            <v-chip>
+                <v-icon icon="mdi-account-check-outline" color="success"></v-icon>
+            </v-chip>
         </v-toolbar-title>
         <v-spacer></v-spacer>
 
         <!-- Otros elementos del app bar si es necesario -->
-        <v-btn icon="mdi-bell-alert-outline"></v-btn>
+        <v-chip >
+            <v-btn icon="mdi-bell-alert-outline" ></v-btn>
+        </v-chip>
 
         <v-menu v-model="menu" :close-on-content-click="false" location="bottom" class="float-sm-end">
 

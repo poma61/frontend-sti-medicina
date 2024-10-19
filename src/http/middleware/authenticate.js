@@ -8,19 +8,15 @@ const authenticate = (to, from, next) => {
 
   //verificar si requiere autenticacion 
   if (need_auth) {
-    //SI necesita autenticacion
     if (useAuth().isAuthenticated()) {
-      next();
-     
+      // esta autenticado dejamos pasar
+      next()
     } else {
-      next({ name: LOGIN }); // si no esta autenticado redireccionamos
-
+      next({ name: LOGIN }) // si no esta autenticado redireccionamos
     }
+  } else {
+    next()
   }
-  
-  //verificar, 
-  next();
+}
 
-};
-
-export default authenticate;
+export default authenticate

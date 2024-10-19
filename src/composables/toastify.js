@@ -1,25 +1,73 @@
 import { toast } from "vue3-toastify";
 
-const options =  {
+const options = {
     position: 'bottom-right',
-    autoClose: 5000,
+    autoClose: 4000, 
     theme: "colored",
-    hideProgressBar: true,
+    hideProgressBar: false,     
+    closeOnClick: true,
+    closeButton: true, 
+}  
+
+export const toastSuccess = (detail) => {
+    try {  
+        toast.success(detail, options)
+    } catch (error) {
+        console.warning(error + "")
+    }
+
 }
 
-export const toastSuccess = (detail)=>{
-    toast.success(detail,options)
+export const toastError = (detail) => {
+    try {
+        toast.error(detail, options)
+    } catch (error) {
+        console.warning(error + "")
+    }
+
 }
 
-export const toastError = (detail) =>{
-    toast.error(detail,options)
+export const toastInfo = (detail) => {
+    try {
+        toast.info(detail, options)
+    } catch (error) {
+        console.warning(error + "")
+    }
+
 }
 
-export const toastInfo = (detail) =>{
-    toast.info(detail,options)
+export const toastWarning = (detail) => {
+    try {
+        toast.warning(detail, options)
+    } catch (error) {
+        console.warning(error + "")
+    }
+
 }
 
-export const toastWarning = (detail) =>{
-    toast.warning(detail,options)
+// Función para mostrar un toast de carga
+export const showLoadingToast = (detail) => {
+    try {
+        const id = toast.loading(detail, {
+            position: 'bottom-right',
+        })
+        return id
+    } catch (error) {
+        console.warning(error + "")
+    }
 }
 
+// Función para finalizar un toast de carga
+export const completeLoadingToast = (id, detail,type) => {
+    try {
+        toast.update(id, {
+            render: detail,
+            type: type,
+            isLoading: false,
+            ...options,
+        });
+        toast.done(id); // Marca el toast como hecho
+    } catch (error) {
+        console.warning(error + "")
+    }
+}

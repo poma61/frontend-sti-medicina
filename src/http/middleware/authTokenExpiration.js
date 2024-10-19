@@ -1,9 +1,15 @@
 import { useAuth } from "@/stores/useAuth";
 
 const authTokenExpiration = (to, from, next) => {
-  useAuth().isRefreshTokenExpired();
-  // si no colocamos  next(), No dejara recargar la pagina
-  next();
-};
+  const LOGIN = "n-login";
 
-export default authTokenExpiration;
+  if (useAuth().isRefreshTokenExpired()) {
+    next({ name: LOGIN }); // Redirigir si el token ha expirado
+  } else {
+    next(); // Dejar pasar si no ha expirado
+  }
+}
+
+export default authTokenExpiration
+
+

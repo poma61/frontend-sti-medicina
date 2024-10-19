@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-navigation-drawer v-model="drawer" app color="light-blue-darken-3">
+    <v-navigation-drawer v-model="drawer" app class="as-navigation-drawer">
       <div class="d-flex flex-column justify-center align-center">
         <v-list-item :prepend-avatar="logo" title="InternAI Tutor" nav>
         </v-list-item>
@@ -18,35 +18,20 @@
         </div>
 
         <v-divider class="border-opacity-25 my-2"></v-divider>
-        <p class="text-subtitle-1 font-weight-bold">ALMACEN</p>
+        <p class="text-subtitle-1 font-weight-bold">PANEL</p>
 
-        <v-list-item
-          prepend-icon="mdi-apps"
-          title="Inicio"
-          value="Inicio"
-          :to="{ name: 'n-home' }"
-          :class="{ 'v-list-item--active': route.name == 'n-home' }"
-        />
+        <v-list-item prepend-icon="mdi-view-dashboard" title="Inicio" value="Inicio" :to="{ name: 'n-home' }"
+          :class="{ 'v-list-item--active': route.name == 'n-home' }" />
 
         <v-divider class="border-opacity-25 my-2"></v-divider>
         <p class="text-subtitle-1 font-weight-bold">ADMINISTRACION</p>
-        <v-list-item
-          prepend-icon="mdi-home-account"
-          title="Estudiantes"
-          value="Estudiantes"
-        />
-        <v-list-item
-          prepend-icon="mdi-home-account"
-          title="Institucional"
-          value="Institucional"
-        />
+        <v-list-item prepend-icon="mdi-account-school" title="Estudiantes" value="Estudiantes"
+          :to="{ name: 'n-estudiante' }" :class="{ 'v-list-item--active': route.name == 'n-estudiante' }" />
+        <v-list-item prepend-icon="mdi-home-city-outline" title="Institucional" value="Institucional" />
       </v-list>
     </v-navigation-drawer>
 
-    <AppBar
-      @byHiddenNavigationDrawerEmit="byHiddenNavigationDrawer"
-      :p_user="user"
-    />
+    <AppBar @byHiddenNavigationDrawerEmit="byHiddenNavigationDrawer" :p_user="user" />
     <v-main class="ma-3">
       <slot></slot>
     </v-main>
@@ -83,7 +68,7 @@ const userAuthData = async () => {
   const auth = useAuth();
   const response = await auth.userData();
   if (response.api_status) {
-    user.value = response.is_data;
+    user.value = response.payload;
   } else {
     toastError(response.detail);
   }

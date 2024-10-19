@@ -29,5 +29,6 @@
         url(@/assets/images/navigation-drawer.jpg) !important;
     background-size: cover !important;
     background-repeat: none !important;
+    background-position-x: right !important;
     color: white !important;
 }

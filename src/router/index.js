@@ -60,6 +60,18 @@ const router = createRouter({
         middleware(authenticate),
       ],
     },
+    {
+      path: "/estudiante",
+      name: "n-estudiante",
+      component: () => import(/* webpackChunkName "EstudianteView"*/ "@/views/EstudianteView.vue"),
+      meta:{
+        requireAuth:true,
+      },
+      beforeEnter:[
+        middleware(authTokenExpiration),
+        middleware(authenticate)
+      ]
+    }
   ], //routes
 });
 
