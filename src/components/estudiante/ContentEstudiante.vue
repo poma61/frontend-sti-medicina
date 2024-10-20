@@ -1,5 +1,4 @@
 <script setup>
-
 import Estudiante from '@/http/api/Estudiante';
 import { ref, onMounted } from 'vue';
 import { toastError, showLoadingToast, completeLoadingToast } from '@/composables/toastify';
@@ -13,6 +12,7 @@ const is_component = ref({
 })
 const search_data_table = ref("")
 const dialog_delete = ref(false);
+const dialog_item_details = ref(false);
 const item_estudiante = ref({});
 const loading_data_table = ref(null);
 const items_per_page_options = ref([
@@ -21,20 +21,22 @@ const items_per_page_options = ref([
     { value: 50, title: '50' },
 ]);
 const columns = ref([
-    { title: 'Nombres', key: 'nombres' },
-    { title: 'Apellido paterno', key: 'apellido_paterno' },
-    { title: 'Apellido materno', key: 'apellido_materno' },
-    { title: 'CI', key: 'ci__', value: (item) => `${item.ci} ${item.ci_expedido}` },
-    { title: 'Correo electronico', key: 'mail__', value: (item) => item.usuario.email },
+    { title: 'Nombres', key: 'nombres', },
+    { title: 'Apellido paterno', key: 'apellido_paterno', },
+    { title: 'Apellido materno', key: 'apellido_materno', },
+    { title: 'CI', key: 'ci__', value: (item) => `${item.ci} ${item.ci_expedido}`, },
+    { title: 'Correo electronico', key: 'usuario.email' },
+    { title: 'Activo', key: 'usuario.is_active', align: 'center' },
     { title: 'Acciones', key: 'actions', align: 'center' },
 ]);
 const data = ref([]);
+
 
 const loadDataTable = () => {
     loading_data_table.value = "yellow-darken-2"
     setTimeout(async () => {
         const estudiante = new Estudiante()
-        const response = await estudiante.loadData()
+        const response = await estudiante.list()
         loading_data_table.value = null
         if (response.api_status) {
             data.value = response.payload
@@ -47,27 +49,30 @@ const loadDataTable = () => {
 const newForm = () => {
     clear()
     const estudiante = new Estudiante()
-    item_estudiante.value = estudiante.fields
+    item_estudiante.value = { ...estudiante.fields }
     handleComponent("form")
 }
 
 const editForm = (item) => {
     clear()
-    const estudiante = new Estudiante()
-    estudiante.loadPayload(item)
-    const { payload, _ } = estudiante.collectPayload()
-    item_estudiante.value = { ...payload }
+    item_estudiante.value = { ...item }
     index_item.value = data.value.indexOf(item)
     handleComponent("form")
 }
 
+const openItemDetails = (item) => {
+    clear()
+    dialog_item_details.value = true
+    item_estudiante.value = { ...item }
+}
+
+const closeItemDetails = () => {
+    dialog_item_details.value = false
+}
+
 const openDeleteItem = (item) => {
     clear()
-    const estudiante = new Estudiante()
-    estudiante.loadPayload({ ...item })
-    const { payload, _ } = estudiante.collectPayload()
-    item_estudiante.value = payload
-    index_item.value = data.value.indexOf(item)
+    item_estudiante.value = { ...item }
     dialog_delete.value = true
 }
 
@@ -77,10 +82,11 @@ const closeDeleteItem = () => {
 
 const confirmDeteleItem = () => {
     const toast_id = showLoadingToast("Eliminando registro...")
+    closeDeleteItem()
     setTimeout(async () => {
         const estudiante = new Estudiante()
-        estudiante.loadPayload({ ...item_estudiante.value }, "delete")
-        const response = await estudiante.sendData()
+        estudiante.loadPayload({ ...item_estudiante.value })
+        const response = await estudiante.delete()
         if (response.api_status) {
             completeLoadingToast(toast_id, response.detail, 'success')
             itemRefreshDataTable('delete')
@@ -88,7 +94,6 @@ const confirmDeteleItem = () => {
             completeLoadingToast(toast_id, response.detail, 'error')
         }
     }, 1000)
-    closeDeleteItem()
 }
 
 //methods 
@@ -116,7 +121,7 @@ const itemRefreshDataTable = (type, item) => {
             break
         case "edit":
             if (item != undefined && item != null) {
-                mergeIntoObject(data.value[index_item.value], { ...item })
+                mergeIntoObject(data.value[index_item.value], item)
             }
             break
         case "delete": data.value.splice(index_item.value, 1)
@@ -148,7 +153,6 @@ onMounted(() => {
             :disabled="is_component.form">
             <v-icon icon="mdi-refresh" />
         </v-btn>
-
         <v-btn color="yellow-darken-2" variant="elevated" class="ma-1" @click="newForm">
             <v-icon icon="mdi-plus" />&nbsp;Nuevo estudiante
         </v-btn>
@@ -165,9 +169,22 @@ onMounted(() => {
             <template v-slot:loading>
                 <v-skeleton-loader type="table-row@11"></v-skeleton-loader>
             </template>
+
+            <template v-slot:item.usuario.is_active="{ item }">
+                <v-chip color="success" v-if="item.usuario.is_active" prepend-icon="mdi-checkbox-marked-circle">
+                    Activo </v-chip>
+
+                <v-chip color="red" v-else prepend-icon="mdi-cancel"> Descativado </v-chip>
+
+            </template>
+
             <template v-slot:item.actions="{ item }">
-                <div style="width:150px">
-                    <v-btn @click="editForm(item)" color="success" class="ma-1" variant="elevated">
+                <div style="width:250px">
+                    <v-btn color="success" class="ma-1" variant="elevated" @click="openItemDetails(item)">
+                        <v-icon icon="mdi-format-align-left"></v-icon>
+                    </v-btn>
+
+                    <v-btn @click="editForm(item)" color="cyan-darken-1" class="ma-1" variant="elevated">
                         <v-icon icon="mdi-pencil"></v-icon>
                     </v-btn>
                     <v-btn @click="openDeleteItem(item)" color="red" class="ma-1" variant="elevated">
@@ -180,7 +197,7 @@ onMounted(() => {
     </v-card>
     <!-- formulario -->
     <FormEstudiante :p_item_estudiante="item_estudiante" v-if="is_component.form"
-        :toItemRefreshDataTable="itemRefreshDataTable" @toNewForm="newForm" />
+        @toItemRefreshDataTable="itemRefreshDataTable" @toNewForm="newForm" />
     <!-- dialog para eliminar un item -->
     <v-dialog v-model="dialog_delete" persistent max-width="500px" transition="dialog-bottom-transition" scrollable>
         <v-card class="text-center">
@@ -197,7 +214,7 @@ onMounted(() => {
                 <v-btn color="red" variant="elevated" @click="closeDeleteItem" class="ma-1">
                     <v-icon icon="mdi-cancel"></v-icon>&nbsp;Cancelar
                 </v-btn>
-                <v-btn color="success" variant="elevated" class="ma-1" @click="confirmDeteleItem()">
+                <v-btn color="cyan-darken-1" variant="elevated" class="ma-1" @click="confirmDeteleItem">
                     <v-icon icon="mdi-check-bold"></v-icon>&nbsp;Si
                 </v-btn>
             </v-card-actions>

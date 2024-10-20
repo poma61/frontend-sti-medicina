@@ -9,11 +9,9 @@ const mergeIntoObject = (target, source) => {
 
 const strictlyAssignProperties = (target, source) => {
     let key
-    if (source !== null && source !== undefined && target !== undefined && target !== null) {
-        for (key in target) {
-            if (Object.prototype.hasOwnProperty.call(target, key) && source[key] !== undefined && source[key] !== null && typeof source[key] !== 'object') {
-                target[key] = source[key]
-            }
+    for (key in target) {
+        if (Object.prototype.hasOwnProperty.call(target, key) && source[key] !== undefined) {
+            target[key] = source[key]
         }
     }
     return target

@@ -6,8 +6,8 @@ module.exports = {
     'eslint:recommended'
   ],
   rules: {
-    'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
-    'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    // 'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    // 'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'vue/valid-v-slot': ['error', { allowModifiers: true }],//desactivar slot modifier
     'no-unused-vars': 'off', // Desactivar la regla no-unused-vars
     //estamos indicando a ESLint que permita la declaración de variables dentro de bloques case 
@@ -26,6 +26,6 @@ module.exports = {
   ],
   parserOptions: {
     ecmaVersion: 'latest',
-   // sourceType: 'module', // Para permitir importaciones de ES
+   sourceType: 'module', // Para permitir importaciones de ES
   }
 }

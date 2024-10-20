@@ -15,7 +15,7 @@ const update_auth_user_data = ref({
   password: "",
   new_password: "",
   confirm_new_password: "",
-  picture: {}
+  picture: []
 });
 const form = ref(null);
 

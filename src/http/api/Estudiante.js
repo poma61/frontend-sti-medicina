@@ -1,8 +1,7 @@
 import API from "@/http/api/API";
 
-
 class Estudiante extends API {
-    constructor() {
+    constructor(estudiante) {
         super()
         this.fields = {
             usuario: {
@@ -34,8 +33,20 @@ class Estudiante extends API {
             update: { url: "user/estudiante/<usuario.uuid>/", method: "put" },
             delete: { url: "user/estudiante/<usuario.uuid>/", method: "delete" },
         }
-    }
 
+        this.config = {
+            "headers": {
+                'Accept': 'application/json',
+                'Content-Type': 'multipart/form-data', // de esta forma podemos enviar imagenes
+            }
+        }
+        if (estudiante !== undefined) {
+            this.loadPayload(estudiante)
+        }
+
+    } // constructor
 }
 
 export default Estudiante
+
+

@@ -1,21 +1,18 @@
 
 import { axiosSecure } from "@/http/connection/axiosHTTP"
-//import { emptyObject, assignObjectExists, assignObjectStrict } from '@/util/objectDyl'
 import { strictlyAssignProperties, isEmptyObject } from "@/utils/objectHelpers"
 class API {
     constructor() {
-        this._fields = {
-            id: 0
-        }
+        this._fields = {}
         this._parameters = {}
         this._payload = { ...this._fields }
-        this._payload_operation = "no_operation"
         this._config = {
-            headers: {
-                'Assept': 'application/json',
+            "headers": {
+                'Accept': 'application/json',
                 'Content-Type': 'application/json'
             }
         }
+
         this._endpoints = {
             list: { url: "", method: "" },
             create: { url: "", method: "" },
@@ -27,14 +24,13 @@ class API {
     async list() {
         try {
             const endpoint_list = this._endpoints.list
-
             const resolve = await axiosSecure[endpoint_list.method](endpoint_list.url, {
                 ...this._parameters,
             }, this._config)
             return resolve.data
 
         } catch (error) {
-            if (error.response == undefined || error.response.data == undefined) {
+            if (error.response === undefined || error.response.data === undefined) {
                 return { api_status: false, detail: error + "" }
             }
             return error.response.data
@@ -44,13 +40,17 @@ class API {
     async create() {
         try {
             const endpoint_create = this._endpoints.create
+            // eliminar campos que estan vacios, porque django valida igual a los campos vacios
+            const data = this.removeEmptyProperties(this._payload)
+            this._payload = { ...data }
+
             const resolve = await axiosSecure[endpoint_create.method](endpoint_create.url, {
-                payload: { ...this._payload },
+                ...this._payload,
                 ...this._parameters
-            }, this.config)
+            }, this._config)
             return resolve.data
         } catch (error) {
-            if (error.response == undefined || error.response.data == undefined) {
+            if (error.response === undefined || error.response.data === undefined) {
                 return { api_status: false, detail: error + "" }
             }
             return error.response.data
@@ -59,16 +59,19 @@ class API {
 
     async update() {
         try {
-
             const endpoint_update = this._endpoints.update
             const url = this.replaceUrlParam(endpoint_update.url)
+            // eliminar campos que estan vacios, porque django valida igual a los campos vacios
+            const data = this.removeEmptyProperties(this._payload)
+            this._payload = { ...data }
+
             const resolve = await axiosSecure[endpoint_update.method](url, {
-                payload: { ...this._payload },
+                ...this._payload,
                 ...this._parameters
-            }, this.config)
+            }, this._config)
             return resolve.data
         } catch (error) {
-            if (error.response == undefined || error.response.data == undefined) {
+            if (error.response === undefined || error.response.data === undefined) {
                 return { api_status: false, detail: error + "" }
             }
             return error.response.data
@@ -80,71 +83,43 @@ class API {
             const url = this.replaceUrlParam(endpoint_delete.url)
             const resolve = await axiosSecure[endpoint_delete.method](url, {
                 ...this._parameters
-            }, this.config)
+            }, this._config)
             return resolve.data
         } catch (error) {
-            if (error.response == undefined || error.response.data == undefined) {
+            if (error.response === undefined || error.response.data === undefined) {
                 return { api_status: false, detail: error + "" }
             }
             return error.response.data
         }
     }
 
-    loadPayload(source, payload_operation) {
+    loadPayload(source) {
         let key
         let object_attributes = {};
         let non_object_attributes = {};
-        if (source != undefined && source != null && !isEmptyObject(source)) {
-            for (key in this._payload) {
-                if (typeof this._payload[key] === 'object') {
-                    // Si el atributo es un objeto, lo almacenamos en object_attributes (objeto anidado)
-                    object_attributes[key] = this._payload[key]
 
-                } else {
-                    non_object_attributes[key] = this._payload[key]
-                }
+        for (key in this._payload) {
+            if (typeof this._payload[key] === 'object') {
+                // Si el atributo es un objeto, lo almacenamos en object_attributes (objeto anidado)
+                object_attributes[key] = this._payload[key]
+            } else {
+                non_object_attributes[key] = this._payload[key]
             }
+        }
 
-            // procesar objetos anidados
-            if (!isEmptyObject(object_attributes)) {
-                for (key in object_attributes) {
-                    object_attributes[key] = strictlyAssignProperties(object_attributes[key], source[key])
-                }
+        // procesar objetos anidados
+        if (!isEmptyObject(object_attributes)) {
+            for (key in object_attributes) {
+                object_attributes[key] = strictlyAssignProperties(object_attributes[key], source[key])
             }
-            // objetos planos
-            if (!isEmptyObject(non_object_attributes)) {
-                non_object_attributes = strictlyAssignProperties(non_object_attributes, source)
-            }
-            this._payload = { ...non_object_attributes, ...object_attributes }
         }
-        if(payload_operation!== undefined){
-            this._payload_operation = payload_operation
+        // objetos planos
+        if (!isEmptyObject(non_object_attributes)) {
+            non_object_attributes = strictlyAssignProperties(non_object_attributes, source)
         }
-    }
 
-    collectPayload() {
-        const payload = this._payload;
-        const payload_operation = this._payload_operation
-        return { payload, payload_operation }
-    }
+        this._payload = { ...non_object_attributes, ...object_attributes }
 
-    loadData() {
-        return this.list()
-    }
-
-    async sendData() {
-        switch (this._payload_operation) {
-            case "list":
-                return this.list()
-            case "create":
-                return this.create()
-            case "update":
-                return this.update()
-            case "delete":
-                return this.delete()
-            default:
-                console.error("Operacion no valida.")
-        }
     }
 
     replaceUrlParam(url) {
@@ -165,19 +140,33 @@ class API {
             return values
         })
     }
+    removeEmptyProperties(obj) {
+        for (const key in obj) {
+            if (obj[key] === "" || obj[key] === null) {
+                delete obj[key]
+            } else if (typeof obj[key] === 'object') {
+                this.removeEmptyProperties(obj[key]) // rescursividad para objetos anidados
+            }
+        }
+        return obj
+    }
+
+    collectPayload() {
+        return this._payload;
+    }
 
     loadParameters(parameters) {
         this._parameters = Object.assign(this._parameters, parameters);
     }
 
     set endpoints(endpoints) {
-        this._endpoints = { ...endpoints }
+        this._endpoints = endpoints
     }
     get endpoints() {
         return this._endpoints
     }
     set fields(fields) {
-        this._fields = { ...fields }
+        this._fields = fields
         this._payload = { ...fields }
     }
     get fields() {

@@ -7,15 +7,14 @@ const options = {
     hideProgressBar: false,     
     closeOnClick: true,
     closeButton: true, 
-}  
-
+}   
+  
 export const toastSuccess = (detail) => {
     try {  
         toast.success(detail, options)
-    } catch (error) {
+    } catch (error) { 
         console.warning(error + "")
-    }
-
+    } 
 }
 
 export const toastError = (detail) => {
@@ -24,7 +23,6 @@ export const toastError = (detail) => {
     } catch (error) {
         console.warning(error + "")
     }
-
 }
 
 export const toastInfo = (detail) => {
@@ -33,7 +31,6 @@ export const toastInfo = (detail) => {
     } catch (error) {
         console.warning(error + "")
     }
-
 }
 
 export const toastWarning = (detail) => {
@@ -42,7 +39,6 @@ export const toastWarning = (detail) => {
     } catch (error) {
         console.warning(error + "")
     }
-
 }
 
 // Función para mostrar un toast de carga

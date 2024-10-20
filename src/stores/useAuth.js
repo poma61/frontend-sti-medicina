@@ -8,7 +8,7 @@ export const useAuth = defineStore("useAuth", () => {
     access_token: "",
     refresh_token: "",
     access_token_expiration: 0,
-    refresh_token_expiration: 0,
+    refresh_token_expiration: 0,   
   });
 
   const initializeAuthState = () => {
@@ -135,7 +135,7 @@ export const useAuth = defineStore("useAuth", () => {
         setAuthState({
           state: false,
           access_token: "",
-          refresh_token: "",
+          refresh_token: "", 
           access_token_expiration: 0,
           refresh_token_expiration: 0,
         });
