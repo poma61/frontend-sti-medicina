@@ -1,10 +1,11 @@
-    
+
 <script setup>
 import NavigationDrawer from '@/layouts/NavigationDrawer.vue';
 </script>
 
 <template>
-    <NavigationDrawer>
+
+    <NavigationDrawer> 
         <slot></slot>
     </NavigationDrawer>
 </template>

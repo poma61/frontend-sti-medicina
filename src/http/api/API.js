@@ -40,9 +40,6 @@ class API {
     async create() {
         try {
             const endpoint_create = this._endpoints.create
-            // eliminar campos que estan vacios, porque django valida igual a los campos vacios
-            const data = this.removeEmptyProperties(this._payload)
-            this._payload = { ...data }
 
             const resolve = await axiosSecure[endpoint_create.method](endpoint_create.url, {
                 ...this._payload,
@@ -61,10 +58,7 @@ class API {
         try {
             const endpoint_update = this._endpoints.update
             const url = this.replaceUrlParam(endpoint_update.url)
-            // eliminar campos que estan vacios, porque django valida igual a los campos vacios
-            const data = this.removeEmptyProperties(this._payload)
-            this._payload = { ...data }
-
+           
             const resolve = await axiosSecure[endpoint_update.method](url, {
                 ...this._payload,
                 ...this._parameters
@@ -99,11 +93,13 @@ class API {
         let non_object_attributes = {};
 
         for (key in this._payload) {
-            if (typeof this._payload[key] === 'object') {
+            //forma mas segura de consultar si es un objeto
+            if (Object.prototype.toString.call(this._payload[key]) === '[object Object]') {
                 // Si el atributo es un objeto, lo almacenamos en object_attributes (objeto anidado)
                 object_attributes[key] = this._payload[key]
             } else {
                 non_object_attributes[key] = this._payload[key]
+
             }
         }
 
@@ -119,7 +115,6 @@ class API {
         }
 
         this._payload = { ...non_object_attributes, ...object_attributes }
-
     }
 
     replaceUrlParam(url) {
@@ -140,16 +135,18 @@ class API {
             return values
         })
     }
-    removeEmptyProperties(obj) {
-        for (const key in obj) {
-            if (obj[key] === "" || obj[key] === null) {
-                delete obj[key]
-            } else if (typeof obj[key] === 'object') {
-                this.removeEmptyProperties(obj[key]) // rescursividad para objetos anidados
-            }
-        }
-        return obj
-    }
+
+    // Este metodo es para eliminar los campos que estan vacios pero no ce necesita
+    // removeEmptyProperties(obj) {
+    //     for (const key in obj) {
+    //         if (obj[key] === "" || obj[key] === null) {
+    //             delete obj[key]
+    //         } else if (Object.prototype.toString.call(obj[key]) === '[object Object]') {
+    //             this.removeEmptyProperties(obj[key]) // rescursividad para objetos anidados
+    //         }
+    //     }
+    //     return obj
+    // }
 
     collectPayload() {
         return this._payload;

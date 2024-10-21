@@ -42,9 +42,9 @@ const authLogout = () => {
         <v-spacer></v-spacer>
 
         <!-- Otros elementos del app bar si es necesario -->
-        <v-chip >
-            <v-btn icon="mdi-bell-alert-outline" ></v-btn>
-        </v-chip>
+        <v-badge :content="1" color="cyan-darken-1">
+            <v-icon icon="mdi-bell" ></v-icon>
+        </v-badge>
 
         <v-menu v-model="menu" :close-on-content-click="false" location="bottom" class="float-sm-end">
 

@@ -4,6 +4,9 @@ import Estudiante from '@/http/api/Estudiante';
 import { toastError, toastSuccess } from '@/composables/toastify';
 import app from '@/config/app';
 import Camera from 'simple-vue-camera';
+import { VDateInput } from 'vuetify/labs/VDateInput'
+import { VNumberInput } from 'vuetify/labs/VNumberInput'
+import { parseISO, format } from 'date-fns'
 
 // props and emit
 const props = defineProps(["p_item_estudiante"])
@@ -19,6 +22,7 @@ const devices_camera = ref([])
 const dialog_camera = ref(false)
 const refCamera = ref(null)
 const image_file = ref([])
+const date_input = ref(null)
 
 // cuando el valor de props.p_item_estudiante cambian desde el componente padre
 // debemos actualizar item_estudiante
@@ -48,13 +52,19 @@ const showSerializerErrors = computed(() => {
     }// function
 })
 
+const formattedDate = (value) => {
+    if (value) {
+        item_estudiante.value.fecha_nacimiento = format(value, "yyyy-MM-dd")
+    }
+}
 
 //methods
 const save = () => {
+
     loading_btn.value = true
     // eliminamos picture si es de tipo string
     //significa que no se subio ninguna imagen
-    if (typeof item_estudiante.value.usuario.picture === 'string') {
+    if (typeof item_estudiante.value.usuario.picture === 'string' || item_estudiante.value.usuario.picture === null) {
         delete item_estudiante.value.usuario.picture
     }
 
@@ -63,6 +73,7 @@ const save = () => {
             // cuando es nuevo registro
             const estudiante = new Estudiante()
             estudiante.loadPayload({ ...item_estudiante.value })
+
             const response = await estudiante.create()
             loading_btn.value = false
 
@@ -79,9 +90,8 @@ const save = () => {
             }
         } else {
             //edicion de registro
-            const estudiante = new Estudiante()
-            estudiante.loadPayload({ ...item_estudiante.value })
-            const response = await estudiante.update(true) // partial = true
+            const estudiante = new Estudiante({ ...item_estudiante.value })
+            const response = await estudiante.update()
 
             loading_btn.value = false
             if (response.api_status) {
@@ -112,13 +122,14 @@ const uploadImage = () => {
 
 const clearImageFile = () => {
     src_image.value = null
-    item_estudiante.value.usuario.picture = ""
+    item_estudiante.value.usuario.picture = null
 }
 
 const clear = () => {
     serializer_errors.value = {}
     src_image.value = null
     image_file.value = []
+    date_input.value = null
 }
 
 const openCamera = async () => {
@@ -166,9 +177,11 @@ const changeCameraDevice = async (device_id) => {
 }
 
 onMounted(() => {
-    // Para cargar la imagen cuando se esta editando el registro
     if (item_estudiante.value.usuario.id > 0) {
+        // Para cargar la imagen cuando se esta editando el registro
         src_image.value = app.BASE_URL + item_estudiante.value.usuario.picture
+        //para cargar la fecha porque la fecha de date-input es de tipo Sun Oct 27 2024 00:00:00 GMT-0400 (hora de Bolivia)
+        date_input.value = parseISO(item_estudiante.value.fecha_nacimiento)
     }
 })
 
@@ -241,20 +254,27 @@ onMounted(() => {
                     </v-col>
 
                     <v-col cols="12" sm="4">
-                        <v-text-field v-model="item_estudiante.fecha_nacimiento" label="Fecha de nacimiento (*)"
+                        <v-date-input clearable v-model:model-value="date_input" label="Fecha de nacimiento (*)"
                             color="indigo-lighten-1" :error-messages="showSerializerErrors('fecha_nacimiento')"
-                            type="date" />
+                            @update:model-value="formattedDate($event)">
+                        </v-date-input>
+
                     </v-col>
 
                     <v-col cols="12" sm="4">
-                        <v-text-field v-model="item_estudiante.numero_contacto" label="N° de contacto (*)"
-                            color="indigo-lighten-1" :error-messages="showSerializerErrors('numero_contacto')"
-                            type="number" clearable />
+
+                        <v-number-input :min="0" v-model="item_estudiante.numero_contacto"
+                            :model-value="Number(item_estudiante.numero_contacto)" label="N° de contacto (*)"
+                            color="indigo-lighten-1"
+                            :error-messages="showSerializerErrors('numero_contacto')"></v-number-input>
                     </v-col>
+
                     <v-col cols="12" sm="4">
-                        <v-text-field v-model="item_estudiante.matricula_univ" label="Matricula universitaria (*)"
-                            color="indigo-lighten-1" :error-messages="showSerializerErrors('matricula_univ')"
-                            type="number" clearable />
+                        <v-number-input :min="0" v-model="item_estudiante.matricula_univ"
+                            :model-value="Number(item_estudiante.matricula_univ)" label="Matricula universitaria (*)"
+                            color="indigo-lighten-1"
+                            :error-messages="showSerializerErrors('matricula_univ')"></v-number-input>
+
                     </v-col>
 
                     <v-col cols="12" sm="4">
@@ -294,7 +314,7 @@ onMounted(() => {
                     <v-col cols="12" sm="6">
                         <v-file-input accept="image/*" label="Foto" color="indigo-lighten-1"
                             :error-messages="showSerializerErrors('usuario.picture')" v-model="image_file"
-                            @change="uploadImage()" @click:clear="clearImageFile">
+                            @change="uploadImage" @click:clear="clearImageFile">
                             <template v-slot:append>
                                 <v-btn v-bind="props" icon="mdi-camera" color="indigo-lighten-1" @click="openCamera" />
                             </template>
