@@ -8,7 +8,7 @@ export const useAuth = defineStore("useAuth", () => {
     access_token: "",
     refresh_token: "",
     access_token_expiration: 0,
-    refresh_token_expiration: 0,   
+    refresh_token_expiration: 0,
   });
 
   const initializeAuthState = () => {
@@ -135,7 +135,7 @@ export const useAuth = defineStore("useAuth", () => {
         setAuthState({
           state: false,
           access_token: "",
-          refresh_token: "", 
+          refresh_token: "",
           access_token_expiration: 0,
           refresh_token_expiration: 0,
         });
@@ -144,6 +144,17 @@ export const useAuth = defineStore("useAuth", () => {
     } catch (error) {
       if (error.response == undefined || error.response.data == undefined) {
         return { api_status: false, detail: error + "" };
+      }
+      // tenemos un error 401 posiblente el usuario ya se haya eliminado o este inactivo
+      if (error.response.status === 401) {
+        setAuthState({
+          state: false,
+          access_token: "",
+          refresh_token: "",
+          access_token_expiration: 0,
+          refresh_token_expiration: 0,
+        });
+        return { api_status: true, detail: "" };
       }
       return error.response.data;
     }

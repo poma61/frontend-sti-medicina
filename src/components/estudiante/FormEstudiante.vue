@@ -22,7 +22,7 @@ const devices_camera = ref([])
 const dialog_camera = ref(false)
 const refCamera = ref(null)
 const image_file = ref([])
-const date_input = ref(null)
+const fecha_nacimiento_date_input = ref(null)
 
 // cuando el valor de props.p_item_estudiante cambian desde el componente padre
 // debemos actualizar item_estudiante
@@ -97,6 +97,8 @@ const save = () => {
             if (response.api_status) {
                 toastSuccess(response.detail)
                 emit("toItemRefreshDataTable", 'edit', response.payload)
+                // solo limpiados los serializadores
+                serializer_errors.value = {}
             } else {
                 if (response.serializer_errors != undefined) {
                     serializer_errors.value = response.serializer_errors
@@ -129,7 +131,7 @@ const clear = () => {
     serializer_errors.value = {}
     src_image.value = null
     image_file.value = []
-    date_input.value = null
+    fecha_nacimiento_date_input.value = null
 }
 
 const openCamera = async () => {
@@ -181,7 +183,7 @@ onMounted(() => {
         // Para cargar la imagen cuando se esta editando el registro
         src_image.value = app.BASE_URL + item_estudiante.value.usuario.picture
         //para cargar la fecha porque la fecha de date-input es de tipo Sun Oct 27 2024 00:00:00 GMT-0400 (hora de Bolivia)
-        date_input.value = parseISO(item_estudiante.value.fecha_nacimiento)
+        fecha_nacimiento_date_input.value = parseISO(item_estudiante.value.fecha_nacimiento)
     }
 })
 
@@ -220,10 +222,13 @@ onMounted(() => {
                 </v-row>
 
                 <v-row>
-                    <v-col cols="12" sm="4">
-                        <v-switch color="indigo-lighten-1" inset hide
-                            :label="item_estudiante.usuario.is_active ? 'Activo' : 'Desactivado'"
-                            v-model="item_estudiante.usuario.is_active" />
+                    <v-col cols="12" sm="12">
+                        <p class="text-warning">Si el usuario está habilitado, podrá acceder al sistema; de lo
+                            contrario, si está deshabilitado, no tendrá acceso.</p>
+                        <v-switch color="indigo-lighten-1" inset
+                            :label="item_estudiante.usuario.is_active ? 'Habilitado' : 'Deshabilitado'"
+                            v-model="item_estudiante.usuario.is_active"
+                            :error-messages="showSerializerErrors('usuario.is_active')" />
                     </v-col>
                 </v-row>
 
@@ -254,8 +259,9 @@ onMounted(() => {
                     </v-col>
 
                     <v-col cols="12" sm="4">
-                        <v-date-input clearable v-model:model-value="date_input" label="Fecha de nacimiento (*)"
-                            color="indigo-lighten-1" :error-messages="showSerializerErrors('fecha_nacimiento')"
+                        <v-date-input clearable v-model:model-value="fecha_nacimiento_date_input"
+                            label="Fecha de nacimiento (*)" color="indigo-lighten-1"
+                            :error-messages="showSerializerErrors('fecha_nacimiento')"
                             @update:model-value="formattedDate($event)">
                         </v-date-input>
 
