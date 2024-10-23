@@ -1,3 +1,7 @@
-<template>
-  <router-view/>
+
+<template >
+    <v-app>
+        <router-view ></router-view>
+    </v-app>
 </template>
+

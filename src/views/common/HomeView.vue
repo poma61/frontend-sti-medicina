@@ -1,5 +1,5 @@
 <script setup>
-import BaseTemplate from "@/layouts/BaseTemplate.vue";
+import BaseTemplate from '@/layouts/BaseTemplate.vue';
 </script>
 
 <template>
@@ -9,3 +9,8 @@ import BaseTemplate from "@/layouts/BaseTemplate.vue";
     </h1>
   </BaseTemplate>
 </template>
+
+
+
+
+

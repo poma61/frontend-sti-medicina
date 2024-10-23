@@ -10,24 +10,24 @@ import { toastError } from "@/composables/toastify";
 
 const user = ref("");
 const password = ref("");
-const loading = ref(false); // permite habilitar desabilitar los campos y la carga del btn
-const router = useRouter(); // Instancia del enrutador para navegar programaticamente
-const show = ref(false);
+const loading = ref(false) // permite habilitar desabilitar los campos y la carga del btn
+const router = useRouter() // Instancia del enrutador para navegar programaticamente
+const show = ref(false)
 //methods
 const login = () => {
   loading.value = true;
 
   setTimeout(async () => {
-    const auth = useAuth();
+    const auth = useAuth()
     const auth_success = await auth.loginUser(user.value, password.value);
     if (auth_success.api_status) {
       router.push("/home");
     } else {
-      toastError(auth_success.detail);
+      toastError(auth_success.detail)
     }
-    loading.value = false;
-  }, 200);
-};
+    loading.value = false
+  }, 200)
+}
 
 const required = (value) => !!value || "Campo requerido.";
 
@@ -35,18 +35,18 @@ const filterSpecialChars = (event) => {
   const value = event.target.value;
   const filtered_value = value.replace(/[^A-Za-z0-9]/g, ""); // Remueve caracteres especiales y espacios
   user.value = filtered_value;
-};
+}
 
 const filterSpaces = (event) => {
   const value = event.target.value;
   const filtered_value = value.replace(/\s/g, ""); // Elimina todos los espacios
   password.value = filtered_value;
-};
+}
 
 // Computed para habilitar o deshabilitar el botón
 const canSubmit = computed(() => {
   return user.value.length > 0 && password.value.length > 0;
-});
+})
 </script>
 
 

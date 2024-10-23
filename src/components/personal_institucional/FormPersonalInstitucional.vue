@@ -1,6 +1,6 @@
 <script setup>
 import { ref, defineProps, defineEmits, watch, computed, nextTick, onMounted } from 'vue';
-import Estudiante from '@/http/api/Estudiante';
+import PersonalInstitucional from '@/http/api/PersonalInstitucional';
 import { toastError, toastSuccess } from '@/composables/toastify';
 import app from '@/config/app';
 import Camera from 'simple-vue-camera';
@@ -9,11 +9,11 @@ import { VNumberInput } from 'vuetify/labs/VNumberInput'
 import { parseISO, format } from 'date-fns'
 
 // props and emit
-const props = defineProps(["p_item_estudiante"])
+const props = defineProps(["p_item_personal_institucional"])
 const emit = defineEmits(["toItemRefreshDataTable", "toNewForm"])
 
 //data
-const item_estudiante = ref(props.p_item_estudiante);
+const item_personal_institucional = ref(props.p_item_personal_institucional);
 const show_password = ref(false)
 const src_image = ref(null);
 const loading_btn = ref(false);
@@ -24,11 +24,11 @@ const refCamera = ref(null)
 const image_file = ref([])
 const fecha_nacimiento_date_input = ref(null)
 
-// cuando el valor de props.p_item_estudiante cambian desde el componente padre
-// debemos actualizar item_estudiante
+// cuando el valor de props.p_item_personal_institucional cambian desde el componente padre
+// debemos actualizar item_personal_institucional
 // esto pasa porque se ejecuta el emit toNewForm del componente padre
-watch(() => props.p_item_estudiante, () => {
-    item_estudiante.value = props.p_item_estudiante
+watch(() => props.p_item_personal_institucional, () => {
+    item_personal_institucional.value = props.p_item_personal_institucional
     clear()
 })
 
@@ -54,7 +54,7 @@ const showSerializerErrors = computed(() => {
 
 const formattedDate = (value) => {
     if (value) {
-        item_estudiante.value.fecha_nacimiento = format(value, "yyyy-MM-dd")
+        item_personal_institucional.value.fecha_nacimiento = format(value, "yyyy-MM-dd")
     }
 }
 
@@ -64,17 +64,17 @@ const save = () => {
     loading_btn.value = true
     // eliminamos picture si es de tipo string
     //significa que no se subio ninguna imagen
-    if (typeof item_estudiante.value.usuario.picture === 'string' || item_estudiante.value.usuario.picture === null) {
-        delete item_estudiante.value.usuario.picture
+    if (typeof item_personal_institucional.value.usuario.picture === 'string' || item_personal_institucional.value.usuario.picture === null) {
+        delete item_personal_institucional.value.usuario.picture
     }
 
     setTimeout(async () => {
-        if (item_estudiante.value.usuario.id == 0) {
+        if (item_personal_institucional.value.usuario.id == 0) {
             // cuando es nuevo registro
-            const estudiante = new Estudiante()
-            estudiante.loadPayload({ ...item_estudiante.value })
+            const personal_institucional = new PersonalInstitucional()
+            personal_institucional.loadPayload({ ...item_personal_institucional.value })
 
-            const response = await estudiante.create()
+            const response = await personal_institucional.create()
             loading_btn.value = false
 
             if (response.api_status) {
@@ -90,8 +90,8 @@ const save = () => {
             }
         } else {
             //edicion de registro
-            const estudiante = new Estudiante({ ...item_estudiante.value })
-            const response = await estudiante.update()
+            const personal_institucional = new PersonalInstitucional({ ...item_personal_institucional.value })
+            const response = await personal_institucional.update()
 
             loading_btn.value = false
             if (response.api_status) {
@@ -112,7 +112,7 @@ const save = () => {
 //visualizar imagen cargada
 const uploadImage = () => {
     const archivo = image_file.value
-    item_estudiante.value.usuario.picture = image_file.value // cargar la imagen
+    item_personal_institucional.value.usuario.picture = image_file.value // cargar la imagen
     if (archivo) {
         const render = new FileReader()
         render.readAsDataURL(archivo)
@@ -124,7 +124,7 @@ const uploadImage = () => {
 
 const clearImageFile = () => {
     src_image.value = null
-    item_estudiante.value.usuario.picture = null
+    item_personal_institucional.value.usuario.picture = null
 }
 
 const clear = () => {
@@ -165,7 +165,7 @@ const capturePhoto = async () => {
             const extension_type = blob.type.split('/')
             const archivo = new File([blob], `fotografia.${extension_type[1]}`, { type: blob.type });
             //cargamos el archivo imagen
-            item_estudiante.value.usuario.picture = archivo
+            item_personal_institucional.value.usuario.picture = archivo
         } else {
             toastError('Error al capturar foto.')
         }
@@ -177,24 +177,25 @@ const capturePhoto = async () => {
 const changeCameraDevice = async (device_id) => {
     await refCamera.value.changeCamera(device_id)
 }
+
 const filterSpecialChars = (event) => {
     const value = event.target.value;
     const filtered_value = value.replace(/[^A-Za-z0-9]/g, ""); // Remueve caracteres especiales y espacios
-    item_estudiante.value.usuario.user = filtered_value;
+    item_personal_institucional.value.usuario.user = filtered_value;
 }
 
 const filterSpaces = (event) => {
     const value = event.target.value;
     const filtered_value = value.replace(/\s/g, ""); // Elimina todos los espacios
-    item_estudiante.value.usuario.password = filtered_value;
+    item_personal_institucional.value.usuario.password = filtered_value;
 }
 
 onMounted(() => {
-    if (item_estudiante.value.usuario.id > 0) {
+    if (item_personal_institucional.value.usuario.id > 0) {
         // Para cargar la imagen cuando se esta editando el registro
-        src_image.value = app.BASE_URL + item_estudiante.value.usuario.picture
+        src_image.value = app.BASE_URL + item_personal_institucional.value.usuario.picture
         //para cargar la fecha porque la fecha de date-input es de tipo Sun Oct 27 2024 00:00:00 GMT-0400 (hora de Bolivia)
-        fecha_nacimiento_date_input.value = parseISO(item_estudiante.value.fecha_nacimiento)
+        fecha_nacimiento_date_input.value = parseISO(item_personal_institucional.value.fecha_nacimiento)
     }
 })
 
@@ -203,10 +204,10 @@ onMounted(() => {
 <template>
     <v-card>
         <v-card-title class="bg-indigo-lighten-1 pa-4">
-            <span class="text-h6" v-if="item_estudiante.usuario.id == 0"> Registrar nuevo estudiante</span>
-            <span class="text-h6" v-else> Actualizar datos del estudiante</span>
+            <span class="text-h6" v-if="item_personal_institucional.usuario.id == 0"> Registrar nuevo
+                personal institucional</span>
+            <span class="text-h6" v-else> Actualizar datos del personal institucional</span>
         </v-card-title>
-        
         <!-- formulairo -->
         <v-card-text class="pa-4">
             <p class="text-red text-subtitle-1">Los campos marcados con (*) son obligatorios.</p>
@@ -215,15 +216,14 @@ onMounted(() => {
                 <v-divider class="mb-5" opacity="0.3"></v-divider>
                 <v-row>
                     <v-col cols="12" sm="4">
-                        <v-text-field v-model="item_estudiante.usuario.user" label="Usuario (*)"
-                            color="indigo-lighten-1" clearable :error-messages="showSerializerErrors('usuario.user')" 
-                            @input="filterSpecialChars"
-                            />
+                        <v-text-field v-model="item_personal_institucional.usuario.user" label="Usuario (*)"
+                            color="indigo-lighten-1" clearable :error-messages="showSerializerErrors('usuario.user')"
+                            @input="filterSpecialChars($event)" />
                     </v-col>
 
                     <v-col cols="12" sm="4">
-                        <v-text-field v-model="item_estudiante.usuario.password"
-                            :label="item_estudiante.usuario.id == 0 ? 'Contraseña (*)' : 'Contraseña'"
+                        <v-text-field v-model="item_personal_institucional.usuario.password"
+                            :label="item_personal_institucional.usuario.id == 0 ? 'Contraseña (*)' : 'Contraseña'"
                             color="indigo-lighten-1" clearable
                             :append-inner-icon="show_password ? 'mdi-eye' : 'mdi-eye-off'"
                             :type="show_password ? 'text' : 'password'" autocomplete="off"
@@ -232,46 +232,62 @@ onMounted(() => {
                     </v-col>
 
                     <v-col cols="12" sm="4">
-                        <v-text-field v-model="item_estudiante.usuario.email" label="Correo electronico (*)"
+                        <v-text-field v-model="item_personal_institucional.usuario.email" label="Correo electronico (*)"
                             color="indigo-lighten-1" clearable
                             :error-messages="showSerializerErrors('usuario.email')" />
                     </v-col>
                 </v-row>
 
                 <v-row>
+                    <v-col cols="12" sm="4">
+                        <v-select v-model="item_personal_institucional.usuario.user_type" label="Tipo de usuario (*)"
+                            :items="['doctor', 'administrativo']" color="indigo-lighten-1" clearable
+                            :error-messages="showSerializerErrors('usuario.user_type')"></v-select>
+                    </v-col>
+                </v-row>
+                <v-row>
+
                     <v-col cols="12" sm="12">
                         <p class="text-warning">Si el usuario está habilitado, podrá acceder al sistema; de lo
                             contrario, si está deshabilitado, no tendrá acceso.</p>
                         <v-switch color="indigo-lighten-1" inset
-                            :label="item_estudiante.usuario.is_active ? 'Habilitado' : 'Deshabilitado'"
-                            v-model="item_estudiante.usuario.is_active"
+                            :label="item_personal_institucional.usuario.is_active ? 'Habilitado' : 'Deshabilitado'"
+                            v-model="item_personal_institucional.usuario.is_active"
                             :error-messages="showSerializerErrors('usuario.is_active')" />
                     </v-col>
                 </v-row>
-
-                <p class="text-h6">Datos del estudiante</p>
+                <p class="text-h6">Permisos</p>
                 <v-divider class="mb-5" opacity="0.3"></v-divider>
                 <v-row>
                     <v-col cols="12" sm="4">
-                        <v-text-field v-model="item_estudiante.nombres" label="Nombres (*)" color="indigo-lighten-1"
-                            clearable :error-messages="showSerializerErrors('nombres')" />
+                        <v-switch color="indigo-lighten-1" inset />
+                    </v-col>
+                </v-row>
+
+                <p class="text-h6">Datos del personal institucional</p>
+                <v-divider class="mb-5" opacity="0.3"></v-divider>
+                <v-row>
+                    <v-col cols="12" sm="4">
+                        <v-text-field v-model="item_personal_institucional.nombres" label="Nombres (*)"
+                            color="indigo-lighten-1" clearable :error-messages="showSerializerErrors('nombres')" />
                     </v-col>
                     <v-col cols="12" sm="4">
-                        <v-text-field v-model="item_estudiante.apellido_paterno" label="Apellido paterno (*)"
-                            color="indigo-lighten-1" clearable
+                        <v-text-field v-model="item_personal_institucional.apellido_paterno"
+                            label="Apellido paterno (*)" color="indigo-lighten-1" clearable
                             :error-messages="showSerializerErrors('apellido_paterno')" />
                     </v-col>
 
                     <v-col cols="12" sm="4">
-                        <v-text-field v-model="item_estudiante.apellido_materno" label="Apellido materno (*)"
-                            color="indigo-lighten-1" clearable
+                        <v-text-field v-model="item_personal_institucional.apellido_materno"
+                            label="Apellido materno (*)" color="indigo-lighten-1" clearable
                             :error-messages="showSerializerErrors('apellido_materno')" />
                     </v-col>
                 </v-row>
+
                 <v-row>
                     <v-col cols="12" sm="4">
-                        <v-select v-model="item_estudiante.genero" label="Genero (*)" :items="['masculino', 'femenino']"
-                            color="indigo-lighten-1" clearable
+                        <v-select v-model="item_personal_institucional.genero" label="Genero (*)"
+                            :items="['masculino', 'femenino']" color="indigo-lighten-1" clearable
                             :error-messages="showSerializerErrors('genero')"></v-select>
                     </v-col>
 
@@ -286,35 +302,36 @@ onMounted(() => {
 
                     <v-col cols="12" sm="4">
 
-                        <v-number-input :min="0" v-model="item_estudiante.numero_contacto"
-                            :model-value="Number(item_estudiante.numero_contacto)" label="N° de contacto (*)"
-                            color="indigo-lighten-1"
+                        <v-number-input :min="0" v-model="item_personal_institucional.numero_contacto"
+                            :model-value="Number(item_personal_institucional.numero_contacto)"
+                            label="N° de contacto (*)" color="indigo-lighten-1"
                             :error-messages="showSerializerErrors('numero_contacto')"></v-number-input>
-                    </v-col>
-
-                    <v-col cols="12" sm="4">
-                        <v-number-input :min="0" v-model="item_estudiante.matricula_univ"
-                            :model-value="Number(item_estudiante.matricula_univ)" label="Matricula universitaria (*)"
-                            color="indigo-lighten-1"
-                            :error-messages="showSerializerErrors('matricula_univ')"></v-number-input>
-
-                    </v-col>
-
-                    <v-col cols="12" sm="4">
-                        <v-text-field v-model="item_estudiante.internado_rot" label="Internado Rotario (*)"
-                            color="indigo-lighten-1" :error-messages="showSerializerErrors('internado_rot')"
-                            clearable />
                     </v-col>
                 </v-row>
 
                 <v-row>
                     <v-col cols="12" sm="4">
-                        <v-text-field v-model="item_estudiante.ci" label="C.I. (*)" color="indigo-lighten-1" clearable
-                            :error-messages="showSerializerErrors('ci')" />
+                        <v-text-field v-model="item_personal_institucional.cargo" label="Cargo (*)"
+                            color="indigo-lighten-1" :error-messages="showSerializerErrors('cargo')" clearable />
+
                     </v-col>
 
                     <v-col cols="12" sm="4">
-                        <v-autocomplete v-model="item_estudiante.ci_expedido" label="Expedido (*)"
+                        <v-text-field v-model="item_personal_institucional.grado_academico" label="Grado academico (*)"
+                            color="indigo-lighten-1" :error-messages="showSerializerErrors('grado_academico')"
+                            clearable />
+                    </v-col>
+
+                </v-row>
+
+                <v-row>
+                    <v-col cols="12" sm="4">
+                        <v-text-field v-model="item_personal_institucional.ci" label="C.I. (*)" color="indigo-lighten-1"
+                            clearable :error-messages="showSerializerErrors('ci')" />
+                    </v-col>
+
+                    <v-col cols="12" sm="4">
+                        <v-autocomplete v-model="item_personal_institucional.ci_expedido" label="Expedido (*)"
                             :items="['SC', 'CH', 'CB', 'PT', 'BN', 'LP', 'PA', 'TJ', 'OR', 'SinExp']"
                             color="indigo-lighten-1" clearable
                             :error-messages="showSerializerErrors('ci_expedido')"></v-autocomplete>
@@ -322,12 +339,12 @@ onMounted(() => {
                 </v-row>
                 <v-row>
                     <v-col cols="12" sm="4">
-                        <v-textarea v-model="item_estudiante.direccion" label="Direccion (*)" color="indigo-lighten-1"
-                            :error-messages="showSerializerErrors('direccion')" clearable />
+                        <v-textarea v-model="item_personal_institucional.direccion" label="Direccion (*)"
+                            color="indigo-lighten-1" :error-messages="showSerializerErrors('direccion')" clearable />
                     </v-col>
 
                     <v-col cols="12" sm="4">
-                        <v-textarea v-model="item_estudiante.observaciones" label="Observaciones" clearable
+                        <v-textarea v-model="item_personal_institucional.observaciones" label="Observaciones" clearable
                             color="indigo-lighten-1" :error-messages="showSerializerErrors('Observaciones')" />
                     </v-col>
 

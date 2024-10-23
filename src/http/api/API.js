@@ -136,18 +136,6 @@ class API {
         })
     }
 
-    // Este metodo es para eliminar los campos que estan vacios pero no ce necesita
-    // removeEmptyProperties(obj) {
-    //     for (const key in obj) {
-    //         if (obj[key] === "" || obj[key] === null) {
-    //             delete obj[key]
-    //         } else if (Object.prototype.toString.call(obj[key]) === '[object Object]') {
-    //             this.removeEmptyProperties(obj[key]) // rescursividad para objetos anidados
-    //         }
-    //     }
-    //     return obj
-    // }
-
     collectPayload() {
         return this._payload;
     }

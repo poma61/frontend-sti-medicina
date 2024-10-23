@@ -5,14 +5,16 @@ import { useAuth } from '@/stores/useAuth';
 import { useRouter } from 'vue-router';
 import { toastError } from '@/composables/toastify';
 import app from '@/config/app';
-const loading_logout = ref(false);
+import { useThemeStore } from '@/stores/useThemeStore';
 
 //data
+const loading_logout = ref(false);
 const emit = defineEmits(['byHiddenNavigationDrawerEmit']);
 const props = defineProps(['p_user']);
 const menu = ref(false);
 const dialog = ref(false);
 const router = useRouter();
+const theme_store = useThemeStore()
 
 const authLogout = () => {
     dialog.value = false;
@@ -29,10 +31,14 @@ const authLogout = () => {
         }
     }, 200);
 }
+
+const reloadPage = () => {
+    router.go(0)
+}
 </script>
 
 <template>
-    <v-app-bar app color="light-blue-darken-4" height="50" :elevation="10">
+    <v-app-bar app color="light-blue-darken-3" height="50" :elevation="10">
         <v-app-bar-nav-icon @click.stop="emit('byHiddenNavigationDrawerEmit')"></v-app-bar-nav-icon>
         <v-toolbar-title>
             <v-chip>
@@ -40,11 +46,14 @@ const authLogout = () => {
             </v-chip>
         </v-toolbar-title>
         <v-spacer></v-spacer>
+        <v-btn :icon="theme_store.getThemeState() == 'dark' ?  'mdi-brightness-5': 'mdi-brightness-3' "
+            @click="theme_store.toggleTheme" />
 
+        <v-btn icon="mdi-refresh" @click="reloadPage" />
         <!-- Otros elementos del app bar si es necesario -->
-        <v-badge :content="1" color="cyan-darken-1">
-            <v-icon icon="mdi-bell" ></v-icon>
-        </v-badge>
+        <!-- <v-badge :content="1" color="cyan-darken-1">
+            <v-icon icon="mdi-bell"></v-icon>
+        </v-badge> -->
 
         <v-menu v-model="menu" :close-on-content-click="false" location="bottom" class="float-sm-end">
 
