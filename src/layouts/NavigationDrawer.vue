@@ -1,3 +1,30 @@
+<script setup>
+import AppBar from "@/layouts/AppBar.vue";
+import { ref, onMounted } from "vue";
+import { useUserStore } from "@/stores/useUserStore"; // Importar la nueva store
+import { useRoute } from "vue-router";
+import app from "@/config/app";
+import logo from "@/assets/images/logo-medicina.png";
+
+const route = useRoute(); // Contiene informacion sobre la ruta actual
+const open = ref([])
+
+const userStore = useUserStore();
+
+//data
+const drawer = ref(true);
+//methods
+const byHiddenNavigationDrawer = () => {
+  drawer.value = !drawer.value
+}
+
+// Obtener datos del usuario al montar el componente
+onMounted(() => {
+  userStore.userAuthData()
+})
+</script>
+
+
 <template>
 
   <v-navigation-drawer v-model="drawer" app class="as-navigation-drawer">
@@ -27,26 +54,25 @@
       <v-divider class="border-opacity-25 my-2"></v-divider>
       <p class="text-subtitle-2 font-weight-bold">ESTUDIO</p>
 
-      <v-list nav class="pa-0" v-model:opened="open">
-        <v-list-group value="Areas">
 
-          <template v-slot:activator="{ props }">
-            <v-list-item v-bind="props" title="Areas I.R." prepend-icon="mdi-library-outline" />
-          </template>
-          <v-list-item prepend-icon="mdi-numeric-1-circle-outline" title="Medicina Interna" value="MedicinaInterna"
-            :to="{ name: 'n-ir-medicina-interna' }"
-            :class="{ 'v-list-item--active': route.name == 'n-ir-medicina-interna' || route.name == 'n-view-tema' }" />
+      <v-list-group value="Areas">
 
-          <v-list-item prepend-icon="mdi-numeric-2-circle-outline" title="Cirurgía" value="Cirurgia" />
+        <template v-slot:activator="{ props }">
+          <v-list-item v-bind="props" title="Areas I.R." prepend-icon="mdi-library-outline" />
+        </template>
+        <v-list-item prepend-icon="mdi-numeric-1-circle-outline" title="Medicina Interna" value="MedicinaInterna"
+          :to="{ name: 'n-ir-medicina-interna' }"
+          :class="{ 'v-list-item--active': route.name == 'n-ir-medicina-interna' || route.name == 'n-view-tema' }" />
 
-          <v-list-item prepend-icon="mdi-numeric-3-circle-outline" title="Pediatria" value="Pediatria" />
+        <v-list-item prepend-icon="mdi-numeric-2-circle-outline" title="Cirurgía" value="Cirurgia" />
 
-          <v-list-item prepend-icon="mdi-numeric-4-circle-outline" title="Ginecologia Obs."
-            value="GinecologiaObstetricia" />
-          <v-list-item prepend-icon="mdi-numeric-5-circle-outline" title="Salud Pública" value="SaludPublica" />
+        <v-list-item prepend-icon="mdi-numeric-3-circle-outline" title="Pediatria" value="Pediatria" />
 
-        </v-list-group>
-      </v-list>
+        <v-list-item prepend-icon="mdi-numeric-4-circle-outline" title="Ginecologia Obs."
+          value="GinecologiaObstetricia" />
+        <v-list-item prepend-icon="mdi-numeric-5-circle-outline" title="Salud Pública" value="SaludPublica" />
+
+      </v-list-group>
 
       <v-list-item prepend-icon="mdi-bookmark-box-multiple" title="Biblioteca médica" value="BibliotecaMedica" />
 
@@ -68,31 +94,3 @@
 
   <AppBar @byHiddenNavigationDrawerEmit="byHiddenNavigationDrawer" :p_user="userStore.user" />
 </template>
-
-<script setup>
-import AppBar from "@/layouts/AppBar.vue";
-import { ref, onMounted } from "vue";
-import { useUserStore } from "@/stores/useUserStore"; // Importar la nueva store
-import { useRoute } from "vue-router";
-import app from "@/config/app";
-import logo from "@/assets/images/logo-medicina.png";
-
-const route = useRoute(); // Contiene informacion sobre la ruta actual
-const open = ref(['Areas'])
-
-const userStore = useUserStore();
-
-//data
-const drawer = ref(true);
-//methods
-const byHiddenNavigationDrawer = () => {
-  drawer.value = !drawer.value
-}
-
-// Obtener datos del usuario al montar el componente
-onMounted(() => {
-  userStore.userAuthData()
-})
-</script>
-
-

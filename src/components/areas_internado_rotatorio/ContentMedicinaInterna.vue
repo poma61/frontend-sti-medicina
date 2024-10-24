@@ -1,42 +1,42 @@
 <script setup>
-import { ref } from 'vue';
+import { toastError } from '@/composables/toastify';
+import Tema from '@/http/api/Tema';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const loading_data_iterator = ref(false)
 const search_item = ref("")
 const router = useRouter()
 
-const data = ref([
-    { id: 1, titulo: 'Cardiología', descripcion: 'Estudio del corazón y sus enfermedades.' },
-    { id: 2, titulo: 'Neumología', descripcion: 'Estudio de los pulmones y sus enfermedades.' },
-    { id: 3, titulo: 'Gastroenterología', descripcion: 'Estudio del sistema digestivo. wfserfwe rwerf' },
-    { id: 3, titulo: 'Gastroenterología', descripcion: 'Estudio del sistema digestivo.' },
-    { id: 3, titulo: 'Gastroenterología', descripcion: 'Estudio del sistema digestivo.' },
-    { id: 3, titulo: 'Gastroenterología', descripcion: 'Estudio del sistema digestivo.' },
-    { id: 3, titulo: 'Gastroenterología', descripcion: 'Estudio del sistema digestivo.' },
-    { id: 3, titulo: 'Gastroenterología', descripcion: 'Estudio del sistema digestivo. ewfwerfwe wefrewrw wrewrwqe wrfwqerqwe rqwerwerf' },
-    { id: 3, titulo: 'Gastroenterología', descripcion: 'Estudio del sistema digestivo.  wefwq werfwqerf werfwe wrwerfew wwerfwe rfwe' },
-    { id: 3, titulo: 'Gastroenterología', descripcion: 'Estudio del sistema digestivo. werfewr rqewrwqerf wrwerwer wrwerwer werwerfw' },
-    { id: 3, titulo: 'Gastroenterología', descripcion: 'Estudio del sistema digestivo. ewrewrw w3erwerwerw werwerw' },
-    { id: 3, titulo: 'Gastroenterología', descripcion: 'Estudio del sistema digestivo. ewrewrw erwerewrew werwerew rwerewrew' },
-    { id: 3, titulo: 'Gastroenterología', descripcion: 'Estudio del sistema digestivo. erwerew erewrwerw werwerwer werewrwe werewr' },
-])
+const data = ref([])
 
 const loadDataIterator = () => {
-    //
+    loading_data_iterator.value = true
+    setTimeout(async () => {
+    const tema = new Tema()
+    const response =  await tema.list()
+    loading_data_iterator.value =false
+    if( response.api_status){
+        data.value =  response.payload
+    }else{
+        toastError(response.detail)
+    }
+    }, 200)
 }
 
-const showTema = (tema_id) => {
-    router.push({ name: 'n-view-tema', params: { area: 'medicina-interna', uuid: tema_id.id } })
+const showTema = (tema) => {
+    router.push({ name: 'n-view-tema', params: { area: tema.area.name, uuid: tema.uuid } })
 }
 
+onMounted(()=>{
+    loadDataIterator()
+})
 </script>
 
 <template>
-
     <v-tooltip text="Actualizar temas">
         <template v-slot:activator="{ props }">
-            <v-btn v-bind="props" color="light-blue-accent-4" variant="elevated" class="ma-1"
+            <v-btn v-bind="props" color="light-blue-accent-4" variant="elevated" class="ma-1" rounded
                 @click="loadDataIterator()">
                 <v-icon icon="mdi-refresh"></v-icon>
             </v-btn>
@@ -44,54 +44,50 @@ const showTema = (tema_id) => {
     </v-tooltip>
 
     <!-- iterator -->
-    <v-card class="mt-2" elevation="0">
-        <v-overlay v-model="loading_data_iterator" class="align-center justify-center" persistent>
+    <v-card class="mt-2 as-container-data-iterator" elevation="0">
+        <v-overlay v-model="loading_data_iterator" class="align-center justify-center" persistent contained>
             <div class="text-center">
                 <v-progress-circular color="light-blue-accent-4" indeterminate size="100"></v-progress-circular>
                 <p class="text-white text-h6">Cargando datos...</p>
             </div>
         </v-overlay>
 
-        <v-data-iterator :items="data" :items-per-page="16" :search="search_item"
+        <v-data-iterator :items="data" :items-per-page="9" :search="search_item"
             :sort-by="[{ key: 'id', order: 'desc' }]">
 
             <template v-slot:header>
                 <v-text-field v-model="search_item" clearable density="comfortable" hide-details
-                    placeholder="Buscar Registros" prepend-inner-icon="mdi-magnify" color="secondary" class="pa-2"
-                    max-width="800px" />
+                    placeholder="Buscar temas..." prepend-inner-icon="mdi-magnify" color="secondary" class="pa-2" />
             </template>
 
             <template v-slot:default="{ items }">
-                <div>
-                    <v-container class="as__data-iterator" fluid>
-                        <v-row justify="center">
-                            <v-col v-for="(item, index) in items" :key="index" cols="auto" md="3">
+                <v-container class="as__data-iterator" fluid>
+                    <v-row justify="center">
+                        <v-col v-for="(item, index) in items" :key="index" cols="auto" md="4">
 
-                                <v-card class="pa-3" elevation="4">
-                                    <v-card-title>
-                                        {{ item.raw.titulo }}
-                                    </v-card-title>
-                                    <v-card-text>
+                            <v-card class="pa-3" elevation="4" min-height="200px">
+                                <v-card-title>
+                                    {{ item.raw.title }}
+                                </v-card-title>
+                                <v-card-text>
 
-                                        {{ item.raw.descripcion }}
-                                    </v-card-text>
+                                    {{ item.raw.description }}
+                                </v-card-text>
 
-                                    <v-card-actions>
-                                        <v-divider></v-divider>
-                                        <v-btn color="secondary" variant="tonal" class="ma-1"
-                                            @click="showTema(item.raw)">
-                                            Ver tema
-                                            <v-icon icon="mdi-arrow-right-box"></v-icon>
-                                        </v-btn>
-                                    </v-card-actions>
-                                </v-card>
-                            </v-col>
-                        </v-row>
-                    </v-container>
-                </div>
+                                <v-card-actions>
+                                    <v-divider color="secondary" opacity="0.4"></v-divider>
+                                    <v-btn color="secondary" variant="tonal" class="ma-1" @click="showTema(item.raw)">
+                                        Ver tema
+                                        <v-icon icon="mdi-arrow-right-box"></v-icon>
+                                    </v-btn>
+                                </v-card-actions>
+                            </v-card>
+                        </v-col>
+                    </v-row>
+                </v-container>
             </template>
 
-            <template v-slot:footer="{ page, pageCount, prevPage, nextPage }">
+            <template v-slot:footer="{ page, pageCount, prevPage, nextPage }" v-if="data.length != 0">
                 <div class="d-flex align-center justify-end pa-2">
                     <v-btn :disabled="page == 1" icon="mdi-arrow-left" density="comfortable" variant="elevated"
                         @click="prevPage" color="light-blue-accent-4" />
@@ -112,3 +108,22 @@ const showTema = (tema_id) => {
     </v-card>
     <!-- iterator -->
 </template>
+
+<style scoped>
+/* ========================================
+data iterator 
+el valor height de as-container-data-iterator es +130 o +100 sobre el valor height de as__data-iterator
+ejemplo: as__data-iterator =>height700px entonces as-container-data-iterator  => height:130px+700px;
+ejemplo2:as__data-iterator =>height700px entonces as-container-data-iterator => height:100px+700px;
+========================================== */
+
+.as-container-data-iterator {
+    height: 830px;
+}
+
+.as__data-iterator {
+    overflow-y: auto;
+    height: 700px;
+    border-bottom: 1px solid #c2c2c2;
+}
+</style>

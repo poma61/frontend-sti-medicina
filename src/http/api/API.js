@@ -18,6 +18,7 @@ class API {
             create: { url: "", method: "" },
             update: { url: "", method: "" },
             delete: { url: "", method: "" },
+            read: { url: "", method: "" },
         }
     }
 
@@ -25,6 +26,23 @@ class API {
         try {
             const endpoint_list = this._endpoints.list
             const resolve = await axiosSecure[endpoint_list.method](endpoint_list.url, {
+                ...this._parameters,
+            }, this._config)
+            return resolve.data
+
+        } catch (error) {
+            if (error.response === undefined || error.response.data === undefined) {
+                return { api_status: false, detail: error + "" }
+            }
+            return error.response.data
+        }
+    } 
+
+    async read() {
+        try {
+            const endpoint_read = this._endpoints.read
+            const url = this.replaceUrlParam(endpoint_read.url)
+            const resolve = await axiosSecure[endpoint_read.method](url, {
                 ...this._parameters,
             }, this._config)
             return resolve.data
@@ -58,7 +76,7 @@ class API {
         try {
             const endpoint_update = this._endpoints.update
             const url = this.replaceUrlParam(endpoint_update.url)
-           
+
             const resolve = await axiosSecure[endpoint_update.method](url, {
                 ...this._payload,
                 ...this._parameters
@@ -131,7 +149,8 @@ class API {
                 }
 
             }
-            // retornamos valor den parametro de la url
+            // retornamos  parametro de la url
+           
             return values
         })
     }

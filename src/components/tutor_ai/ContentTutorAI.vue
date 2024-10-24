@@ -39,12 +39,11 @@ const sendMessage = async () => {
     const message_to_send = user_message.value
     user_message.value = ''
     loading.value = true
-    nextTick(() => {
-        textareaRef.value.focus = textareaRef.value.focus()
-    })
 
+    // const url = "http://127.0.0.1:8000/api/gen-ai/interaccion-tutorai/"
+    const url = "http://192.168.0.200:8000/api/gen-ai/interaccion-tutorai/"
     try {
-        const response = await fetch("http://127.0.0.1:8000/api/gen-ai/interaccion-tutorai/", {
+        const response = await fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -86,7 +85,7 @@ const sendMessage = async () => {
 
     } catch (error) {
         nextTick(() => {
-            textareaRef.value.focus = textareaRef.value.focus()
+            textareaRef.value.focus()
         })
         toastError(error + "")
         loading.value = false;
@@ -119,8 +118,7 @@ const handleEnterKey = (event) => {
     // Si solo es Enter, se envía el mensaje
     event.preventDefault(); // Evita el comportamiento por defecto de Enter
     sendMessage();
-};
-
+}
 
 
 watch(() => user_message.value, () => {
@@ -140,14 +138,14 @@ watch(() => messages.value, () => {
 onMounted(() => {
     nextTick(() => {
         chatContainerRef.value.scrollTop = chatContainerRef.value.scrollHeight;
-    });
+    })
     userStore.userAuthData()
-});
+})
 
 </script>
 
 <template>
- 
+
     <!--app bar, titulo -->
     <v-app-bar app color="light-blue-darken-3" height="50">
         <v-app-bar-nav-icon :icon="drawer_visible ? 'mdi-chevron-left' : 'mdi-chevron-right'"
@@ -226,5 +224,5 @@ onMounted(() => {
     max-height: 100vh;
     overflow-y: auto;
 }
-
 </style>
+
