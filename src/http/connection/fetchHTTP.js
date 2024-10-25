@@ -22,7 +22,7 @@ const fetchSecure = async (url, options = {}) => {
     headers,
   });
 
-  return response.json() 
+  return response
 }
 
 export { fetchSecure };

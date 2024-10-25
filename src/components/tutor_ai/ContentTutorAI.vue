@@ -6,12 +6,11 @@ import { useRouter } from 'vue-router';
 import DOMPurify from 'dompurify';
 import { toastError } from '@/composables/toastify';
 
+
 /**
  * NOTA importante: 
  * Todo el codigo del tutorAI  esta aqui, el navigation chat NO se esta aqui
- * 
  */
-
 // data
 const router = useRouter()
 const userStore = useUserStore();
@@ -24,6 +23,8 @@ const loading = ref(false)
 const chatContainerRef = ref(null)
 const drawer_visible = ref(true) // Estado para controlar la visibilidad de la barra lateral
 const textareaRef = ref(null); // Ref para el textarea
+// Añadimos un mensaje vacío inicialmente del asistente
+const assistant_message = ref({})
 
 const returnMainMenu = () => {
     router.push({ name: 'n-home' })
@@ -57,30 +58,31 @@ const sendMessage = async () => {
             throw new Error("Error en la respuesta de la API");
         }
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder("utf-8");
+        const reader = response.body.getReader()
+        const decoder = new TextDecoder("utf-8")
         let result = "";  // Acumulador de la respuesta del asistente
 
         // Añadimos un mensaje vacío inicialmente del asistente
-        const assistant_message = { role: 'assistant', content: '' };
-        messages.value.push(assistant_message);
+        assistant_message.value = { role: 'assistant', content: '' }
+        messages.value.push(assistant_message.value)
 
-        const value = true
-        while (value) {
-            const { value, done } = await reader.read();
+        const v = true
+        let fragment
+        while (v) {
+            const { value, done } = await reader.read()
             if (done) break;
 
             // Decodificar el fragmento
-            const fragment = decoder.decode(value, { stream: true });
+            fragment = decoder.decode(value, { stream: true })
             result += fragment;  // Acumulamos el fragmento
 
-            // Actualizamos el mensaje del asistente dinámicamente
-            assistant_message.content = result;
-
-            // Forzamos la actualización del estado para reflejar los cambios en la UI
-            messages.value = [...messages.value];
+            // Actualizamos el mensaje del asistente 
+            // la ui se actualiza por la reactividad de vue
+            assistant_message.value.content = result
+            nextTick(() => {
+                chatContainerRef.value.scrollTop = chatContainerRef.value.scrollHeight;
+            })
         }
-
         loading.value = false;
 
     } catch (error) {
@@ -92,18 +94,15 @@ const sendMessage = async () => {
     }
 }
 
-
 const formatMessage = (content) => {
     const formattedContent = content
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>') // Para **
-        .replace(/(\d+\.)/g, '<br/>$1')
-        .replace(/\n/g, '<br/>');
+        .replace(/\n/g, '<br/>');// Para \n
 
     return DOMPurify.sanitize(formattedContent); // Sanitiza el contenido
 }
 
 /// ******************************
-
 // Clase para los mensajes, dependiendo si es del usuario o del asistente
 const getMessageClass = (role) => {
     return role === 'user' ? 'is-align-self-end ' : 'is-align-self-start'
@@ -127,12 +126,11 @@ watch(() => user_message.value, () => {
     })
 })
 
-watch(() => messages.value, () => {
+watch(() => loading.value, () => {
     nextTick(() => {
-        chatContainerRef.value.scrollTop = chatContainerRef.value.scrollHeight;
+        textareaRef.value.focus()
     })
 })
-
 
 // Desplazar el chat automáticamente hacia abajo al montarse
 onMounted(() => {
@@ -142,10 +140,10 @@ onMounted(() => {
     userStore.userAuthData()
 })
 
+
 </script>
 
 <template>
-
     <!--app bar, titulo -->
     <v-app-bar app color="light-blue-darken-3" height="50">
         <v-app-bar-nav-icon :icon="drawer_visible ? 'mdi-chevron-left' : 'mdi-chevron-right'"
@@ -169,13 +167,12 @@ onMounted(() => {
                     <!-- Mensajes del Chat -->
                     <v-list-item v-for="(message, index) in messages" :key="index"
                         :class="getMessageClass(message.role)">
-                        <v-card :prepend-icon="message.role == 'assistant' ? 'mdi-robot' : null"
+                        <v-card :prepend-icon="message.role == 'assistant' ? 'mdi-atom-variant' : null"
                             :append-icon="message.role == 'user' ? 'mdi-account' : null" class="pa-2"
                             :variant="message.role == 'user' ? 'tonal' : null">
                             <p v-html="formatMessage(message.content)"></p>
                         </v-card>
                     </v-list-item>
-
                 </v-list>
 
                 <!-- Input para escribir mensajes -->
@@ -183,7 +180,8 @@ onMounted(() => {
                     <div class="textarea-user-message">
                         <v-textarea v-model="user_message" placeholder="Escribe tu mensaje..." clearable
                             :disabled="loading" rows="2" color="cyan-darken-1" ref="textareaRef"
-                            @keyup.enter="handleEnterKey" auto-grow :max-rows="6" variant="outlined">
+                            @keyup.enter="handleEnterKey" auto-grow :max-rows="6" variant="outlined" class="text-center"
+                            :messages="'TutorAI puede cometer errores. Considere verificar la informacion proporcionada.'">
                         </v-textarea>
                         <v-btn class="ma-1" color="cyan-darken-1" icon="mdi-send" @click="sendMessage"
                             :disabled="loading || !user_message" :loading="loading" />
@@ -225,4 +223,3 @@ onMounted(() => {
     overflow-y: auto;
 }
 </style>
-

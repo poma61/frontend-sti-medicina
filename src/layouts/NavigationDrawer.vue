@@ -94,3 +94,4 @@ onMounted(() => {
 
   <AppBar @byHiddenNavigationDrawerEmit="byHiddenNavigationDrawer" :p_user="userStore.user" />
 </template>
+

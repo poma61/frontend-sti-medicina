@@ -39,10 +39,10 @@ const viewImage = () => {
 }
 
 const filterSpecialChars = (event) => {
-  const value = event.target.value;
-  const filtered_value = value.replace(/[^A-Za-z0-9]/g, ""); // Remueve caracteres especiales y espacios
-  update_auth_user_data.value.user = filtered_value;
-};
+  const value = event.target.value
+  const filtered_value = value.replace(/[^A-Za-z0-9]/g, "") // Remueve caracteres especiales y espacios
+  update_auth_user_data.value.user = filtered_value
+}
 
 const filterSpaces = (event, field) => {
   const value = event.target.value;

@@ -13,6 +13,7 @@ class Tema extends API {
             id: 0,
             uuid: "",
             title: "",
+            short_title:"",
             description: "",
             contenido: "",
             archivo_pdf: "",

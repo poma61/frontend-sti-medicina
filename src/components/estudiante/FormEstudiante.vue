@@ -203,8 +203,8 @@ onMounted(() => {
 <template>
     <v-card>
         <v-card-title class="bg-indigo-lighten-1 pa-4">
-            <span class="text-h6" v-if="item_estudiante.usuario.id == 0"> Registrar nuevo estudiante</span>
-            <span class="text-h6" v-else> Actualizar datos del estudiante</span>
+            <span class="text-h6 text-wrap" v-if="item_estudiante.usuario.id == 0"> Registrar nuevo estudiante</span>
+            <span class="text-h6 text-wrap" v-else> Actualizar datos del estudiante</span>
         </v-card-title>
         
         <!-- formulairo -->

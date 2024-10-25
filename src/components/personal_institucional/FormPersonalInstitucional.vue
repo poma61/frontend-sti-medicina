@@ -204,9 +204,9 @@ onMounted(() => {
 <template>
     <v-card>
         <v-card-title class="bg-indigo-lighten-1 pa-4">
-            <span class="text-h6" v-if="item_personal_institucional.usuario.id == 0"> Registrar nuevo
+            <span class="text-h6 text-wrap" v-if="item_personal_institucional.usuario.id == 0"> Registrar nuevo
                 personal institucional</span>
-            <span class="text-h6" v-else> Actualizar datos del personal institucional</span>
+            <span class="text-h6 text-wrap" v-else> Actualizar datos del personal institucional</span>
         </v-card-title>
         <!-- formulairo -->
         <v-card-text class="pa-4">

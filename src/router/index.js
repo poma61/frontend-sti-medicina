@@ -115,7 +115,7 @@ const router = createRouter({
     {
       path: "/area-internado-rotatorio/:area/:uuid",
       name: "n-view-tema",
-      component: () => import(/* webpackChunkName "MedicinaInternaView"*/ "@/views/areas_intenado_rotatorio/AllowTemaView.vue"),
+      component: () => import(/* webpackChunkName "TemaView"*/ "@/views/areas_intenado_rotatorio/TemaView.vue"),
       meta: {
         requireAuth: true,
       },
