@@ -13,7 +13,7 @@ const data = ref([])
 const loadDataIterator = () => {
     loading_data_iterator.value = true
     setTimeout(async () => {
-        const tema = new Tema({ area: { name: 'cirurgia' } })
+        const tema = new Tema({ area: { name: 'ginecologia-obstetricia' } })
         const response = await tema.list()
         loading_data_iterator.value = false
         if (response.api_status) {

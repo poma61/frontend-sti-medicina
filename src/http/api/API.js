@@ -25,9 +25,8 @@ class API {
     async list() {
         try {
             const endpoint_list = this._endpoints.list
-            const resolve = await axiosSecure[endpoint_list.method](endpoint_list.url, {
-                ...this._parameters,
-            }, this._config)
+            const url = this.replaceUrlParam(endpoint_list.url)
+            const resolve = await axiosSecure[endpoint_list.method](url, this._config)
             return resolve.data
 
         } catch (error) {
@@ -36,7 +35,7 @@ class API {
             }
             return error.response.data
         }
-    } 
+    }
 
     async read() {
         try {
@@ -150,7 +149,7 @@ class API {
 
             }
             // retornamos  parametro de la url
-           
+
             return values
         })
     }

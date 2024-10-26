@@ -13,14 +13,14 @@ const data = ref([])
 const loadDataIterator = () => {
     loading_data_iterator.value = true
     setTimeout(async () => {
-    const tema = new Tema()
-    const response =  await tema.list()
-    loading_data_iterator.value =false
-    if( response.api_status){
-        data.value =  response.payload
-    }else{
-        toastError(response.detail)
-    }
+        const tema = new Tema({ area: { name: 'medicina-interna' } })
+        const response = await tema.list()
+        loading_data_iterator.value = false
+        if (response.api_status) {
+            data.value = response.payload
+        } else {
+            toastError(response.detail)
+        }
     }, 200)
 }
 
@@ -28,7 +28,7 @@ const showTema = (tema) => {
     router.push({ name: 'n-view-tema', params: { area: tema.area.name, uuid: tema.uuid } })
 }
 
-onMounted(()=>{
+onMounted(() => {
     loadDataIterator()
 })
 </script>

@@ -62,15 +62,25 @@ onMounted(() => {
         </template>
         <v-list-item prepend-icon="mdi-numeric-1-circle-outline" title="Medicina Interna" value="MedicinaInterna"
           :to="{ name: 'n-ir-medicina-interna' }"
-          :class="{ 'v-list-item--active': route.name == 'n-ir-medicina-interna' || route.name == 'n-view-tema' }" />
+          :class="{ 'v-list-item--active': route.name == 'n-ir-medicina-interna' || route.params.area == 'medicina-interna' }" 
+          />
 
-        <v-list-item prepend-icon="mdi-numeric-2-circle-outline" title="Cirurgía" value="Cirurgia" />
+        <v-list-item prepend-icon="mdi-numeric-2-circle-outline" title="Cirurgía" value="Cirurgia" 
+        :to="{ name: 'n-ir-cirurgia' }"
+        :class="{ 'v-list-item--active': route.name == 'n-ir-cirurgia' || route.params.area == 'cirurgia' }" />
 
-        <v-list-item prepend-icon="mdi-numeric-3-circle-outline" title="Pediatria" value="Pediatria" />
+        <v-list-item prepend-icon="mdi-numeric-3-circle-outline" title="Pediatria" value="Pediatria" 
+        :to="{ name: 'n-ir-pediatria' }"
+        :class="{ 'v-list-item--active': route.name == 'n-ir-pediatria' || route.params.area == 'pediatria' }" />
 
         <v-list-item prepend-icon="mdi-numeric-4-circle-outline" title="Ginecologia Obs."
-          value="GinecologiaObstetricia" />
-        <v-list-item prepend-icon="mdi-numeric-5-circle-outline" title="Salud Pública" value="SaludPublica" />
+          value="GinecologiaObstetricia"
+          :to="{ name: 'n-ir-ginecologia-obstetricia' }"
+          :class="{ 'v-list-item--active': route.name == 'n-ir-ginecologia-obstetricia' || route.params.area == 'ginecologia-obstetricia' }"  />
+
+        <v-list-item prepend-icon="mdi-numeric-5-circle-outline" title="Salud Pública" value="SaludPublica" 
+        :to="{ name: 'n-ir-salud-publica' }"
+        :class="{ 'v-list-item--active': route.name == 'n-ir-salud-publica' || route.params.area == 'salud-publica' }" />
 
       </v-list-group>
 

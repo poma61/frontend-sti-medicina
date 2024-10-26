@@ -19,8 +19,8 @@ class Tema extends API {
             archivo_pdf: "",
         }
         this.endpoints = {
-            list: { url: "internado-root/area-and-tema/", method: "get" },
-            read: { url: "internado-root/area-and-tema/<area.name>/<uuid>/", method: "get" }, 
+            list: { url: "internado-root/all-tema/<area.name>/", method: "get" },
+            read: { url: "internado-root/tema/<area.name>/<uuid>/", method: "get" }, 
         } 
 
         if (tema !== undefined) {

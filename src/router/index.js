@@ -113,6 +113,54 @@ const router = createRouter({
       ]
     },
     {
+      path: "/area-internado-rotatorio/cirurgia",
+      name: "n-ir-cirurgia",
+      component: () => import(/* webpackChunkName "CirurgiaView"*/ "@/views/areas_intenado_rotatorio/CirurgiaView.vue"),
+      meta: {
+        requireAuth: true,
+      },
+      beforeEnter: [
+        middleware(authTokenExpiration),
+        middleware(authenticate),
+      ]
+    },
+    {
+      path: "/area-internado-rotatorio/pediatria",
+      name: "n-ir-pediatria",
+      component: () => import(/* webpackChunkName "PediatriaView"*/ "@/views/areas_intenado_rotatorio/PediatriaView.vue"),
+      meta: {
+        requireAuth: true,
+      },
+      beforeEnter: [
+        middleware(authTokenExpiration),
+        middleware(authenticate),
+      ]
+    },
+    {
+      path: "/area-internado-rotatorio/ginecologia-obstetricia",
+      name: "n-ir-ginecologia-obstetricia",
+      component: () => import(/* webpackChunkName "GinecologiaObstetriciaView"*/ "@/views/areas_intenado_rotatorio/GinecologiaObstetriciaView.vue"),
+      meta: {
+        requireAuth: true,
+      },
+      beforeEnter: [
+        middleware(authTokenExpiration),
+        middleware(authenticate),
+      ]
+    },
+    {
+      path: "/area-internado-rotatorio/salud-publica",
+      name: "n-ir-salud-publica",
+      component: () => import(/* webpackChunkName "SaludPublicaView"*/ "@/views/areas_intenado_rotatorio/SaludPublicaView.vue"),
+      meta: {
+        requireAuth: true,
+      },
+      beforeEnter: [
+        middleware(authTokenExpiration),
+        middleware(authenticate),
+      ]
+    },
+    {
       path: "/area-internado-rotatorio/:area/:uuid",
       name: "n-view-tema",
       component: () => import(/* webpackChunkName "TemaView"*/ "@/views/areas_intenado_rotatorio/TemaView.vue"),
