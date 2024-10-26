@@ -91,15 +91,17 @@ onBeforeUnmount(() => {
     </v-overlay>
 
     <div class="d-flex justify-space-around pa-1 flex-wrap" min-height="80vh">
-      <div class="flex-grow-1" style="width:200px">
+      <div class="flex-grow-1" style="width:300px">
 
-        <v-chip label color="secondary" class="ma-2 px-3 py-5 text-subtitle-1 font-weight-black">
+        <v-chip label color="secondary" class="ma-2 pa-3 py-5 text-subtitle-1 font-weight-black">
           Tiempo: {{ timerStore.formatTime() }}
         </v-chip>
+        <v-divider ></v-divider>
 
-        <p class="px-3 py-5">
+        <p class="px-3 py-5 text-body-1 text-justify">
           {{ item_tema.description }}
         </p>
+        <v-divider class="my-2" ></v-divider> 
         <v-tabs direction="vertical" color="indigo-lighten-1">
           <v-tab @click="handleComponent(EstudiarTema)">
             <v-icon icon="mdi-numeric-1-circle-outline" />

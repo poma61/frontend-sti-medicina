@@ -8,7 +8,7 @@ class ActividadTema {
             evaluate_questions_ai: { url: "internado-root/ai-evaluate-questions/", method: "POST" },
         }
         this.config = {
-            headers: {
+            headers: { 
                 "Content-Type": "application/json",
             },
         }
@@ -38,15 +38,15 @@ class ActividadTema {
         }
     }
     //califica el cuestionario por la IA
-    async evaluateQuestionsAI(questions = []) {
+    async evaluateQuestionsAI(questions = [], tema = new Tema()) {
         try {
-
             const evaluate_questions_ai = this.endpoint.evaluate_questions_ai // endpoint
             const response = await fetchSecure(evaluate_questions_ai.url, {
                 method: evaluate_questions_ai.method,
                 ...this.config,
                 body: JSON.stringify({
-                    questions
+                    questions: questions,
+                    tema: {...tema.collectPayload()}
                 }),
             })
 

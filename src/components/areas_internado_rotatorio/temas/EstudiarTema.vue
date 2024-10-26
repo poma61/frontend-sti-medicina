@@ -78,10 +78,10 @@ const handlePdfInit = (pdf) => {
 
 <template>
     <!-- Se quito para evitar renderizar cada vez porque estamos desarrollando
-    :src="props.p_pdf_source" 
+     
     -->
     <div class="pdf">
-        <PDF  :page="current_page"
+        <PDF  :src="props.p_pdf_source"   :page="current_page"
             :style="{ transform: `scale(${scale})`, transformOrigin: '0 0' }" :showProgress="true"
             :progressColor="'#87ceeb'" @onPageChange="handlePageChange" @onProgress="handleProgress"
             @onPdfInit="handlePdfInit" @onComplete="handleComplete" :disableStream="true" :disableAutoFetch="true"

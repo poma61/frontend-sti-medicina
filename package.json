@@ -18,6 +18,7 @@
     "axios": "^1.7.7",
     "date-fns": "^4.1.0",
     "dompurify": "^3.1.7",
+    "mespeak": "^2.0.2",
     "pdf-vue3": "^1.0.12",
     "pdfjs-dist": "4.7.76",
     "pinia": "^2.1.7",

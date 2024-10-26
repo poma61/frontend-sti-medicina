@@ -5,7 +5,7 @@ import { useUserStore } from "@/stores/useUserStore";
 import { useRouter } from 'vue-router';
 import DOMPurify from 'dompurify';
 import { toastError } from '@/composables/toastify';
-
+import TypingIndicator from '@/components/tutor_ai/TypingIndicator.vue';
 
 /**
  * NOTA importante: 
@@ -21,14 +21,46 @@ const use_theme = useThemeStore()
 const user_message = ref('')
 const loading = ref(false)
 const chatContainerRef = ref(null)
-const drawer_visible = ref(true) // Estado para controlar la visibilidad de la barra lateral
-const textareaRef = ref(null); // Ref para el textarea
+const drawer_visible = ref(true)
+const textareaRef = ref(null);
+const loading_typing_indicator = ref(false)
 // Añadimos un mensaje vacío inicialmente del asistente
 const assistant_message = ref({})
+
 
 const returnMainMenu = () => {
     router.push({ name: 'n-home' })
 }
+
+//************************************* */
+
+const sendTextToSpeech = async (is_text) => {
+    const response = await fetch("http://192.168.0.200:8000/api/text-to-speech/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text: is_text }), // Enviar el texto
+    });
+
+    if (!response.ok) {
+        throw new Error("Error generating speech");
+    }
+
+    // Reproducir el audio
+    const audioUrl = URL.createObjectURL(await response.blob());
+    const audio = new Audio(audioUrl);
+
+    audio.oncanplaythrough = () => {
+        audio.play();
+    }
+
+    audio.onerror = (e) => {
+        console.error("Error occurred while playing audio: ", e);
+    }
+}
+
+
 
 // **************************************
 // Función para manejar el envío de mensajes
@@ -44,6 +76,8 @@ const sendMessage = async () => {
     // const url = "http://127.0.0.1:8000/api/gen-ai/interaccion-tutorai/"
     const url = "http://192.168.0.200:8000/api/gen-ai/interaccion-tutorai/"
     try {
+        loading.value = true
+        loading_typing_indicator.value = true
         const response = await fetch(url, {
             method: "POST",
             headers: {
@@ -53,6 +87,7 @@ const sendMessage = async () => {
                 user_message: message_to_send  // Enviar el mensaje del usuario al backend
             })
         });
+        loading_typing_indicator.value = false
 
         if (!response.ok) {
             throw new Error("Error en la respuesta de la API");
@@ -70,11 +105,16 @@ const sendMessage = async () => {
         let fragment
         while (v) {
             const { value, done } = await reader.read()
-            if (done) break;
+            if (done) {
+                break
+            }
 
             // Decodificar el fragmento
             fragment = decoder.decode(value, { stream: true })
             result += fragment;  // Acumulamos el fragmento
+            // Generar el audio del fragmento mientras se va creando
+            // Generar el audio para cada fragmento significativo
+
 
             // Actualizamos el mensaje del asistente 
             // la ui se actualiza por la reactividad de vue
@@ -83,6 +123,8 @@ const sendMessage = async () => {
                 chatContainerRef.value.scrollTop = chatContainerRef.value.scrollHeight;
             })
         }
+        // eliminamos * para evitar que el audio no genere *
+        await sendTextToSpeech(result.replace(/\*/g, ''));
         loading.value = false;
 
     } catch (error) {
@@ -97,9 +139,9 @@ const sendMessage = async () => {
 const formatMessage = (content) => {
     const formattedContent = content
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>') // Para **
-        .replace(/\n/g, '<br/>');// Para \n
-
-    return DOMPurify.sanitize(formattedContent); // Sanitiza el contenido
+        .replace(/\n/g, '<br/>')// Para \n
+    // Sanitiza el contenido
+    return DOMPurify.sanitize(formattedContent)
 }
 
 /// ******************************
@@ -138,6 +180,10 @@ onMounted(() => {
         chatContainerRef.value.scrollTop = chatContainerRef.value.scrollHeight;
     })
     userStore.userAuthData()
+
+    // meSpeak.loadConfig("https://cdnjs.cloudflare.com/ajax/libs/meSpeak/5.0.0/meSpeak_config.json");
+    //   meSpeak.loadVoice("https://cdnjs.cloudflare.com/ajax/libs/meSpeak/5.0.0/voices.json")
+
 })
 
 
@@ -170,8 +216,11 @@ onMounted(() => {
                         <v-card :prepend-icon="message.role == 'assistant' ? 'mdi-atom-variant' : null"
                             :append-icon="message.role == 'user' ? 'mdi-account' : null" class="pa-2"
                             :variant="message.role == 'user' ? 'tonal' : null">
-                            <p v-html="formatMessage(message.content)"></p>
+                            <p v-html="formatMessage(message.content)" class="text-body-1"></p>
                         </v-card>
+                    </v-list-item>
+                    <v-list-item v-if="loading_typing_indicator">
+                            <TypingIndicator :p_is_typing="true" />
                     </v-list-item>
                 </v-list>
 
@@ -183,7 +232,7 @@ onMounted(() => {
                             @keyup.enter="handleEnterKey" auto-grow :max-rows="6" variant="outlined" class="text-center"
                             :messages="'TutorAI puede cometer errores. Considere verificar la informacion proporcionada.'">
                         </v-textarea>
-                        <v-btn class="ma-1" color="cyan-darken-1" icon="mdi-send" @click="sendMessage"
+                        <v-btn class="ma-1" color="cyan-darken-1" icon="mdi-send" @click="sendTextToSpeech"
                             :disabled="loading || !user_message" :loading="loading" />
                     </div>
                 </v-footer>

@@ -2,10 +2,12 @@
 import { ref, onMounted, nextTick } from 'vue';
 import ActividadTema from '@/http/api/ActividadTema';
 import { toastError } from '@/composables/toastify';
+import Tema from '@/http/api/Tema';
+import DOMPurify from 'dompurify';
 
 const loading_overlay = ref(false);
-const props = defineProps(['p_all_questions'])
-const result = ref("") 
+const props = defineProps(['p_all_questions', 'p_item_tema'])
+const result = ref("")
 
 const isEvaluateQuestionsAI = async () => {
     try {
@@ -13,26 +15,28 @@ const isEvaluateQuestionsAI = async () => {
         let fragment
         let v = true
         const actividad_tema = new ActividadTema()
+        const tema = new Tema({ ...props.p_item_tema })
 
-        const { reader, decoder } = await actividad_tema.evaluateQuestionsAI(props.p_all_questions);
+        const { reader, decoder } = await actividad_tema.evaluateQuestionsAI(props.p_all_questions, tema);
         // si ya recibimos el stream desabilitamos el overlay
         loading_overlay.value = false
 
         while (v) {
             const { value: chunk, done } = await reader.read();
             if (done) {
-                break;
+                break
             }
             // Decodificar el fragmento
             fragment = decoder.decode(chunk, { stream: true })
             result.value += fragment
-          
+
             nextTick(() => {
                 scrollToBottom()
             })
         }
 
     } catch (error) {
+        // si hay un error reseteamos result
         loading_overlay.value = false
         toastError(error)
     }
@@ -45,10 +49,17 @@ const scrollToBottom = () => {
         behavior: 'smooth'
     })
 }
-onMounted(()=>{
-    isEvaluateQuestionsAI()
- console.log(props.p_all_questions)
 
+const formatTextINHtml = (content) => {
+    const formattedContent = content
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>') // Para **
+        .replace(/\n/g, '<br/>')// Para \n
+    // Sanitiza el contenido
+    return DOMPurify.sanitize(formattedContent);
+}
+
+onMounted(() => {
+    isEvaluateQuestionsAI()
 })
 </script>
 
@@ -60,7 +71,10 @@ onMounted(()=>{
             <v-divider color="indigo-lighten-1" opacity="0.7"></v-divider>
         </v-card-subtitle>
         <v-card-text>
-            {{ result }}
+            <p class="mb-5 text-body-2 text-disabled">
+                TutorAI puede cometer errores. Considere verificar la evaluacion del cuestionario.
+            </p>
+            <p v-html="formatTextINHtml(result)" class="text-body-1 no-selected"></p>
         </v-card-text>
     </v-card>
 
@@ -75,4 +89,10 @@ onMounted(()=>{
     </v-overlay>
 </template>
 
-
+<style scoped>
+.no-selected {
+    -webkit-user-select:none !important; 
+  -ms-user-select: none !important;  
+  user-select: none !important; 
+}
+</style>
