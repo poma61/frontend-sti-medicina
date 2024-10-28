@@ -5,24 +5,22 @@ const props = defineProps(['p_is_typing']);
 
 <template>
     <div v-if="props.p_is_typing" class="typing-indicator">
-        <span class="text-body-1">Escribiendo</span>
-        <span class="dot"></span>
-        <span class="dot"></span>
-        <span class="dot"></span>
+        <span class="text-body-1 text-success">Escribiendo</span>
+        <span class="dot bg-success"></span>
+        <span class="dot bg-success"></span>
+        <span class="dot bg-success"></span>
     </div>
 </template>
 
 <style scoped>
 .typing-indicator {
     display: flex;
-    margin: 10px 0; /* Añade un poco de margen vertical */
     align-items: center;
 }
 
 .dot {
-    width: 8px; /* Aumenta el tamaño del punto */
-    height: 8px; /* Aumenta el tamaño del punto */
-    background-color: #000000; /* Color del punto */
+    width: 7px; /* Aumenta el tamaño del punto */
+    height: 7px; /* Aumenta el tamaño del punto */
     border-radius: 50%; /* Hace que los puntos sean circulares */
     animation: blink 1s infinite; /* Añade la animación */
     margin: 0 4px; /* Espaciado entre puntos */

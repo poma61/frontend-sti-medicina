@@ -8,58 +8,60 @@ class ActividadTema {
             evaluate_questions_ai: { url: "internado-root/ai-evaluate-questions/", method: "POST" },
         }
         this.config = {
-            headers: { 
+            headers: {
                 "Content-Type": "application/json",
             },
         }
     }
     //genera cuestionario por la IA
-    async generateQuestionsAI(tema = new Tema()) {
+    async generateQuestionsAI(tema = new Tema(), is_signal = null) {
         try {
             const generate_questions_ai = this.endpoint.generate_questions_ai // endpoint
-            const response = await fetchSecure(generate_questions_ai.url, {
+            const resolve = await fetchSecure(generate_questions_ai.url, {
                 method: generate_questions_ai.method,
                 ...this.config,
                 body: JSON.stringify({
                     ...tema.collectPayload(),
                 }),
+                signal: is_signal
             })
 
-            if (!response.ok) {
-                throw new Error(`Error en la respuesta: ${response.status} ${response.statusText}`);
+            if (!resolve.ok) {
+                throw new Error('Error al generar el cuestionario.');
             }
-            const reader = response.body.getReader();
+            const reader = resolve.body.getReader();
             const decoder = new TextDecoder("utf-8");
 
             // Retornamos el reader para que pueda ser utilizado en el componente
             return { reader, decoder }
         } catch (error) {
-            throw new Error(error.message);
+            throw new Error(error);
         }
     }
     //califica el cuestionario por la IA
-    async evaluateQuestionsAI(questions = [], tema = new Tema()) {
+    async evaluateQuestionsAI(questions = [], tema = new Tema(), is_signal = null) {
         try {
             const evaluate_questions_ai = this.endpoint.evaluate_questions_ai // endpoint
-            const response = await fetchSecure(evaluate_questions_ai.url, {
+            const resolve = await fetchSecure(evaluate_questions_ai.url, {
                 method: evaluate_questions_ai.method,
                 ...this.config,
                 body: JSON.stringify({
                     questions: questions,
-                    tema: {...tema.collectPayload()}
+                    tema: { ...tema.collectPayload() }
                 }),
+                signal: is_signal
             })
 
-            if (!response.ok) {
-                throw new Error(`Error en la respuesta: ${response.status} ${response.statusText}`);
+            if (!resolve.ok) {
+                throw new Error("Error al evaluar el cuestionario.");
             }
-            const reader = response.body.getReader(); // Para leer los fragmentos
+            const reader = resolve.body.getReader(); // Para leer los fragmentos
             const decoder = new TextDecoder("utf-8");
 
             // Retornamos el reader para que pueda ser utilizado en el componente
             return { reader, decoder };
         } catch (error) {
-            throw new Error(error.message);
+            throw new Error(error);
         }
     }
 }

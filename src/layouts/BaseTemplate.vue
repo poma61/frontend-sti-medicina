@@ -12,4 +12,5 @@ import NavigationDrawer from '@/layouts/NavigationDrawer.vue';
     <v-main class="ma-3">
         <slot></slot>
     </v-main>
+    
 </template>

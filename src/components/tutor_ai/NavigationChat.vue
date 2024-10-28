@@ -3,7 +3,6 @@ import app from '@/config/app';
 import { ref, onMounted  } from 'vue';
 import { useUserStore } from "@/stores/useUserStore";
 import logo from "@/assets/images/logo-medicina.png";
-import { useRouter } from 'vue-router';
 
 // data
 const userStore = useUserStore();
@@ -13,6 +12,8 @@ const drawer_visible = ref(true) // Estado para controlar la visibilidad de la b
 onMounted(() => {
     userStore.userAuthData()
 })
+
+
 </script>
 
 <template>

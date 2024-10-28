@@ -1,8 +1,8 @@
-import { defineStore } from "pinia";
-import { useTheme } from 'vuetify';
+import { defineStore } from "pinia"
+import { ref } from "vue"
 
 export const useThemeStore = defineStore('theme', () => {
-    const use_theme = useTheme();
+    const theme = ref('light')
 
     // Inicializar el tema
     const init = () => {
@@ -12,18 +12,17 @@ export const useThemeStore = defineStore('theme', () => {
         } else {
             // Establecer el tema por defecto
             // si esque no tenemos el tema en local storage
-            const default_theme = use_theme.global.name.value;
-            setThemeState(default_theme)
+            setThemeState(theme.value)
         }
     }
 
-    const setThemeState = (theme) => {
-        localStorage.setItem("theme", JSON.stringify(theme));
-        use_theme.global.name.value = theme
+    const setThemeState = (is_theme) => {
+        localStorage.setItem("theme", JSON.stringify(is_theme));
+        theme.value = is_theme
     }
 
     const getThemeState = () => {
-        return use_theme.global.name.value
+        return theme.value
     }
 
     const toggleTheme = () => {
@@ -32,6 +31,6 @@ export const useThemeStore = defineStore('theme', () => {
         setThemeState(new_Theme); // Guardar el nuevo tema para su persistencia
     }
 
-    init();
-    return {getThemeState, toggleTheme };
+    init()
+    return {getThemeState, toggleTheme }
 });

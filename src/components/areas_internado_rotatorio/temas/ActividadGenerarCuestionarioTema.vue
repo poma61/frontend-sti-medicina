@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, nextTick, onBeforeUnmount } from 'vue';
 import ActividadTema from '@/http/api/ActividadTema';
 import { toastError } from '@/composables/toastify';
 import Tema from '@/http/api/Tema';
@@ -15,6 +15,7 @@ const component = ref({
     generar_cuestionario: true,
     evaluar_cuestionario: false,
 })
+const abort_evaluate_question_request = ref(null)
 
 const isGenerateQuestionsAI = async () => {
     try {
@@ -22,13 +23,16 @@ const isGenerateQuestionsAI = async () => {
         disable_text_field.value = true
         loading_overlay.value = true
         let fragment
-        let v = true
+      
         let result = ""
         let purge_pregunta
 
         const actividad_tema = new ActividadTema()
         const tema = new Tema({ ...props.p_item_tema })  // debemos enviar datos de un tema para que la ia genere preguntas
-        const { reader, decoder } = await actividad_tema.generateQuestionsAI(tema);
+
+        abort_evaluate_question_request.value = new AbortController()
+
+        const { reader, decoder } = await actividad_tema.generateQuestionsAI(tema, abort_evaluate_question_request.value.signal);
         // si ya recibimos el stream desabilitamos el overlay
         loading_overlay.value = false
 
@@ -36,6 +40,7 @@ const isGenerateQuestionsAI = async () => {
         question.value = { pregunta: '', respuesta: '' }
         all_questions.value.push(question.value)
 
+        let v = true
         while (v) {
             const { value: chunk, done } = await reader.read();
             if (done) {
@@ -59,12 +64,18 @@ const isGenerateQuestionsAI = async () => {
                 scrollToBottom()
             })
         }
-        // solo habilitamos se se genero el cuestionario
+        abort_evaluate_question_request.value = null // reiniciar
+        // solo habilitamos se cuando se  genero el cuestionario
         disable_text_field.value = false
 
     } catch (error) {
+        // solo mostramos errores que NO sean BodyStreamBuffer y  AbortError
+        if (!error.message.includes("AbortError") && !error.message.includes("BodyStreamBuffer")) {
+            toastError(error.message)
+        }
+
         loading_overlay.value = false
-        toastError(error)
+        abort_evaluate_question_request.value = null // reiniciar
     }
 }
 
@@ -89,9 +100,14 @@ const scrollToBottom = () => {
     })
 }
 
-
 onMounted(() => {
     isGenerateQuestionsAI()
+})
+onBeforeUnmount(() => {
+    // detenemos la evaluacion del cuestionario por AI
+    if (abort_evaluate_question_request.value != null) {
+        abort_evaluate_question_request.value.abort()
+    }
 })
 </script>
 
@@ -143,8 +159,8 @@ onMounted(() => {
 
 <style scoped>
 .no-selected {
-    -webkit-user-select:none !important; 
-  -ms-user-select: none !important;  
-  user-select: none !important; 
+    -webkit-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
 }
 </style>

@@ -29,7 +29,7 @@ onMounted(() => {
 
   <v-navigation-drawer v-model="drawer" app class="as-navigation-drawer">
     <div class="d-flex flex-column justify-center align-center">
-      <v-list-item :prepend-avatar="logo" title="InternAI Tutor" nav>
+      <v-list-item :prepend-avatar="logo" title="InternAI" nav>
       </v-list-item>
     </div>
     <v-divider></v-divider>

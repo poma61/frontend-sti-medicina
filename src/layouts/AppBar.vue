@@ -46,7 +46,7 @@ const reloadPage = () => {
             </v-chip>
         </v-toolbar-title>
         <v-spacer></v-spacer>
-        <v-btn :icon="theme_store.getThemeState() == 'dark' ?  'mdi-brightness-5': 'mdi-brightness-3' "
+        <v-btn :icon="theme_store.getThemeState() == 'dark' ?  'mdi-weather-night': 'mdi-weather-sunny' "
             @click="theme_store.toggleTheme" />
 
         <v-btn icon="mdi-refresh" @click="reloadPage" />

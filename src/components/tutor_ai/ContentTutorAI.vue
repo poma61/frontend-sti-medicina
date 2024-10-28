@@ -1,142 +1,200 @@
 <script setup>
-import { useThemeStore } from '@/stores/useThemeStore';
-import { ref, onMounted, nextTick, watch, } from 'vue';
-import { useUserStore } from "@/stores/useUserStore";
-import { useRouter } from 'vue-router';
-import DOMPurify from 'dompurify';
-import { toastError } from '@/composables/toastify';
-import TypingIndicator from '@/components/tutor_ai/TypingIndicator.vue';
+import { ref, onMounted, nextTick, watch, onBeforeUnmount, } from 'vue'
+import DOMPurify from 'dompurify'
+import { completeLoadingToast, showLoadingToast, toastError } from '@/composables/toastify'
+import TypingIndicator from '@/components/tutor_ai/TypingIndicator.vue'
+import TutorAI from '@/http/api/TutorAI'
+import HelpDialog from '@/components/tutor_ai/HelpDialog.vue'
 
-/**
- * NOTA importante: 
- * Todo el codigo del tutorAI  esta aqui, el navigation chat NO se esta aqui
- */
-// data
-const router = useRouter()
-const userStore = useUserStore();
 const messages = ref([
-    { role: 'assistant', content: 'Hola, soy tu tutor inteligente. ¿En qué puedo ayudarte hoy?' }
+    {
+        role: 'assistant',
+        content: 'Hola, soy tu tutor inteligente. ¿En qué puedo ayudarte hoy?'
+    }
 ])
-const use_theme = useThemeStore()
 const user_message = ref('')
 const loading = ref(false)
-const chatContainerRef = ref(null)
-const drawer_visible = ref(true)
 const textareaRef = ref(null);
 const loading_typing_indicator = ref(false)
-// Añadimos un mensaje vacío inicialmente del asistente
 const assistant_message = ref({})
+const abort_text_to_speeah_request = ref(null)
+const abort_tutor_ai_request = ref(null)
+const audio = ref(null)
+const generate_audio_status = ref(true)
+const dialog_help = ref(false)
+const loading_audio = ref(null)
+const max_words = ref(100)
+const word_count_message = ref('')
+const word_count = ref(0)
 
-
-const returnMainMenu = () => {
-    router.push({ name: 'n-home' })
-}
-
-//************************************* */
-
-const sendTextToSpeech = async (is_text) => {
-    const response = await fetch("http://192.168.0.200:8000/api/text-to-speech/", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text: is_text }), // Enviar el texto
-    });
-
-    if (!response.ok) {
-        throw new Error("Error generating speech");
+const newChat = () => {
+    messages.value = []
+    // si hay una peticion request en proceso
+    if (abort_text_to_speeah_request.value != null) {
+        abort_text_to_speeah_request.value.abort()
     }
 
-    // Reproducir el audio
-    const audioUrl = URL.createObjectURL(await response.blob());
-    const audio = new Audio(audioUrl);
-
-    audio.oncanplaythrough = () => {
-        audio.play();
+    // si hay audio
+    if (audio.value != null) {
+        // pausamos el audio de reproduccion
+        audio.value.pause()
     }
-
-    audio.onerror = (e) => {
-        console.error("Error occurred while playing audio: ", e);
+    // si tutor ai esta respondiendo detenemos
+    if (abort_tutor_ai_request.value != null) {
+        abort_tutor_ai_request.value.abort()
     }
 }
 
+const closeHelpDialog = () => {
+    dialog_help.value = false
+}
 
+const generateAudioStatus = () => {
 
-// **************************************
+    //cambiamos estado de la habilitacion del audio
+    generate_audio_status.value = !generate_audio_status.value
+
+    // si hay una peticion request en proceso
+    if (abort_text_to_speeah_request.value != null) {
+        abort_text_to_speeah_request.value.abort()
+    }
+
+    // si hay audio
+    if (audio.value != null) {
+        // pausamos el audio de reproduccion
+        audio.value.pause()
+    }
+}
+
+//  convertir de texto a audio
+const sendTextToSpeech = async (text) => {
+    try {
+        //permitir generar audio solo si esta  habilitadi
+        if (!generate_audio_status.value) {
+            return
+        }
+        abort_text_to_speeah_request.value = new AbortController()
+
+        const tutor_ai = new TutorAI()
+        loading_audio.value = showLoadingToast("Procesando audio...")
+
+        audio.value = await tutor_ai.textToSpeech(text, abort_text_to_speeah_request.value.signal)
+        completeLoadingToast(loading_audio.value)
+
+        audio.value.oncanplaythrough = () => {
+            audio.value.play()
+        }
+        audio.value.onerror = (e) => {
+            toastError("Se produjo un error al reproducir audio");
+        }
+        abort_text_to_speeah_request.value = null //reiniciar
+
+    } catch (error) {
+        if (loading_audio.value != null) {
+            // detenemos el toast de generacion de audio
+            completeLoadingToast(loading_audio.value)
+        }
+        // solo mostramos errores que NO sean BodyStreamBuffer y  AbortError
+        if (!error.message.includes("AbortError") && !error.message.includes("BodyStreamBuffer")) {
+            toastError(error.message)
+        }
+        abort_text_to_speeah_request.value = null
+    }
+}
+
 // Función para manejar el envío de mensajes
 const sendMessage = async () => {
-    if (!user_message.value.trim()) return;
-
-    // Agregar el mensaje del usuario al chat
-    messages.value.push({ role: 'user', content: user_message.value })
-    const message_to_send = user_message.value
-    user_message.value = ''
-    loading.value = true
-
-    // const url = "http://127.0.0.1:8000/api/gen-ai/interaccion-tutorai/"
-    const url = "http://192.168.0.200:8000/api/gen-ai/interaccion-tutorai/"
     try {
-        loading.value = true
-        loading_typing_indicator.value = true
-        const response = await fetch(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                user_message: message_to_send  // Enviar el mensaje del usuario al backend
-            })
-        });
-        loading_typing_indicator.value = false
+        // eliminamos espacios al final e inicio
+        // y si no hay palabras retornamos
+        if (!user_message.value.trim()) {
 
-        if (!response.ok) {
-            throw new Error("Error en la respuesta de la API");
+            return
+        }
+        // si la cantidad de palabras super no enviamos mensaje
+        if (word_count.value > max_words.value) {
+            return
         }
 
-        const reader = response.body.getReader()
-        const decoder = new TextDecoder("utf-8")
-        let result = "";  // Acumulador de la respuesta del asistente
+        // si hay audio reproduciendose pausamos para evitar choques de audio
+        if (audio.value != null) {
+            audio.value.pause()
+        }
+
+        const message = user_message.value
+        messages.value.push({ role: 'user', content: message })
+        loading.value = true
+        user_message.value = '' // reiniciar el valor
 
         // Añadimos un mensaje vacío inicialmente del asistente
-        assistant_message.value = { role: 'assistant', content: '' }
+        assistant_message.value = { role: 'assistant', content: "" }
         messages.value.push(assistant_message.value)
+
+        // iniciamos el AbortController
+        abort_tutor_ai_request.value = new AbortController()
+
+        const tutor_ai = new TutorAI()
+        // indicamos que esta escribiendo mientras esperamos la solicitud http
+        loading_typing_indicator.value = true
+        const { reader, decoder } = await tutor_ai.tutorAI(message, abort_tutor_ai_request.value.signal)
+        loading_typing_indicator.value = false
 
         const v = true
         let fragment
         while (v) {
-            const { value, done } = await reader.read()
+            const { value: chunk, done } = await reader.read()
+
             if (done) {
                 break
             }
-
             // Decodificar el fragmento
-            fragment = decoder.decode(value, { stream: true })
-            result += fragment;  // Acumulamos el fragmento
-            // Generar el audio del fragmento mientras se va creando
-            // Generar el audio para cada fragmento significativo
+            fragment = decoder.decode(chunk, { stream: true })
+            assistant_message.value.content += fragment;  // Acumulamos el fragmento
 
-
-            // Actualizamos el mensaje del asistente 
-            // la ui se actualiza por la reactividad de vue
-            assistant_message.value.content = result
             nextTick(() => {
-                chatContainerRef.value.scrollTop = chatContainerRef.value.scrollHeight;
+                // Desplazarse suavemente al final de la página
+                autoScroollTo()
             })
         }
-        // eliminamos * para evitar que el audio no genere *
-        await sendTextToSpeech(result.replace(/\*/g, ''));
-        loading.value = false;
+        // eliminamos * para evitar que el audio no genere  el caracter *
+        const text = assistant_message.value.content.replace(/\*/g, '')
+        await sendTextToSpeech(text)
+        loading.value = false
+        abort_tutor_ai_request.value = null // reinicar el AbortController()
 
     } catch (error) {
-        nextTick(() => {
-            textareaRef.value.focus()
-        })
-        toastError(error + "")
-        loading.value = false;
+        // solo mostramos errores que NO sean BodyStreamBuffer y  AbortError
+        if (!error.message.includes("AbortError") && !error.message.includes("BodyStreamBuffer")) {
+            toastError(error.message);
+        }
+        abort_tutor_ai_request.value = null
+        loading.value = false
+        loading_typing_indicator.value = false
     }
 }
 
-const formatMessage = (content) => {
+
+const checkWordCount = () => {
+    // Contar palabras y actualizar el contador
+    word_count.value = user_message.value.trim().split(/\s+/).filter(word => word).length;
+    // Mensaje sobre el límite de palabras
+    if (word_count.value > max_words.value) {
+        word_count_message.value = `Máximo de ${max_words.value} palabras.`;
+
+    } else {
+        word_count_message.value = ''
+    }
+}
+
+
+const autoScroollTo = () => {
+    window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: 'smooth'
+    })
+}
+
+const formatTextINHtml = (content) => {
     const formattedContent = content
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>') // Para **
         .replace(/\n/g, '<br/>')// Para \n
@@ -144,27 +202,27 @@ const formatMessage = (content) => {
     return DOMPurify.sanitize(formattedContent)
 }
 
-/// ******************************
+
 // Clase para los mensajes, dependiendo si es del usuario o del asistente
 const getMessageClass = (role) => {
-    return role === 'user' ? 'is-align-self-end ' : 'is-align-self-start'
+    return role == 'user' ? 'is-align-self-end ' : 'is-align-self-start'
 }
 
 // Manejar el evento de Enter y Shift + Enter
 const handleEnterKey = (event) => {
     if (event.shiftKey) {
         // Si Shift está presionado, permite el salto de línea
-        return;
+        return
+    } else {
+        // Si solo es Enter, se envía el mensaje siempre y cuando no se este generando (loading)
+        sendMessage()
     }
-    // Si solo es Enter, se envía el mensaje
-    event.preventDefault(); // Evita el comportamiento por defecto de Enter
-    sendMessage();
 }
-
 
 watch(() => user_message.value, () => {
     nextTick(() => {
-        chatContainerRef.value.scrollTop = chatContainerRef.value.scrollHeight;
+        // Desplazarse suavemente al final de la página
+        autoScroollTo()
     })
 })
 
@@ -174,71 +232,79 @@ watch(() => loading.value, () => {
     })
 })
 
-// Desplazar el chat automáticamente hacia abajo al montarse
+
 onMounted(() => {
     nextTick(() => {
-        chatContainerRef.value.scrollTop = chatContainerRef.value.scrollHeight;
+        // Desplazarse suavemente al final de la página
+        autoScroollTo()
     })
-    userStore.userAuthData()
-
-    // meSpeak.loadConfig("https://cdnjs.cloudflare.com/ajax/libs/meSpeak/5.0.0/meSpeak_config.json");
-    //   meSpeak.loadVoice("https://cdnjs.cloudflare.com/ajax/libs/meSpeak/5.0.0/voices.json")
-
 })
 
-
+onBeforeUnmount(() => {
+    generateAudioStatus()
+    // si tutor ai esta respondiendo detenemos
+    if (abort_tutor_ai_request.value != null) {
+        abort_tutor_ai_request.value.abort()
+    }
+})
 </script>
 
 <template>
-    <!--app bar, titulo -->
-    <v-app-bar app color="light-blue-darken-3" height="50">
-        <v-app-bar-nav-icon :icon="drawer_visible ? 'mdi-chevron-left' : 'mdi-chevron-right'"
-            @click.stop="drawer_visible = !drawer_visible"> </v-app-bar-nav-icon>
-        <v-toolbar-title>TutorAI</v-toolbar-title>
-        <v-spacer></v-spacer>
 
-        <v-btn :icon="use_theme.getThemeState() == 'dark' ? 'mdi-brightness-5' : 'mdi-brightness-3'"
-            @click="use_theme.toggleTheme" />
-        <v-btn icon="mdi-backburger" @click="returnMainMenu">
+    <div class="controls-tutor-ai">
+        <v-tooltip text="Audio TutorAI">
+            <template v-slot:activator="{ props }">
+                <v-btn v-bind="props" :icon="generate_audio_status ? 'mdi-volume-high' : 'mdi-volume-off'"
+                    color="cyan-darken-1" @click="generateAudioStatus" />
+            </template>
+        </v-tooltip>
 
-        </v-btn>
-    </v-app-bar>
+        <v-tooltip text="Ayuda TutorAI">
+            <template v-slot:activator="{ props }">
+                <v-btn v-bind="props" icon="mdi-help" color="cyan-darken-1" @click="dialog_help = true" />
+            </template>
+        </v-tooltip>
+
+        <v-tooltip text="Nuevo mensaje">
+            <template v-slot:activator="{ props }">
+                <v-btn v-bind="props" icon="mdi-plus" color="cyan-darken-1" @click="newChat" />
+            </template>
+        </v-tooltip>
+    </div>
 
     <!-- Chat menssages -->
-    <div ref="chatContainerRef" class="chat-container">
-        <v-container>
-            <v-main>
-
-                <v-list class="is-flex">
-                    <!-- Mensajes del Chat -->
-                    <v-list-item v-for="(message, index) in messages" :key="index"
-                        :class="getMessageClass(message.role)">
-                        <v-card :prepend-icon="message.role == 'assistant' ? 'mdi-atom-variant' : null"
-                            :append-icon="message.role == 'user' ? 'mdi-account' : null" class="pa-2"
-                            :variant="message.role == 'user' ? 'tonal' : null">
-                            <p v-html="formatMessage(message.content)" class="text-body-1"></p>
-                        </v-card>
-                    </v-list-item>
-                    <v-list-item v-if="loading_typing_indicator">
-                            <TypingIndicator :p_is_typing="true" />
-                    </v-list-item>
-                </v-list>
-
-                <!-- Input para escribir mensajes -->
-                <v-footer app>
-                    <div class="textarea-user-message">
-                        <v-textarea v-model="user_message" placeholder="Escribe tu mensaje..." clearable
-                            :disabled="loading" rows="2" color="cyan-darken-1" ref="textareaRef"
-                            @keyup.enter="handleEnterKey" auto-grow :max-rows="6" variant="outlined" class="text-center"
-                            :messages="'TutorAI puede cometer errores. Considere verificar la informacion proporcionada.'">
-                        </v-textarea>
-                        <v-btn class="ma-1" color="cyan-darken-1" icon="mdi-send" @click="sendTextToSpeech"
-                            :disabled="loading || !user_message" :loading="loading" />
-                    </div>
-                </v-footer>
-            </v-main>
-        </v-container>
+    <div class="chat-container">
+        <v-list class="is-flex">
+            <!-- Mensajes del Chat -->
+            <v-list-item v-for="(message, index) in messages" :key="index" :class="getMessageClass(message.role)">
+                <v-card :prepend-icon="message.role == 'assistant' ? 'mdi-atom-variant' : null"
+                    :append-icon="message.role == 'user' ? 'mdi-account' : null" class="pa-2"
+                    :variant="message.role == 'user' ? 'tonal' : null">
+                    <p v-html="formatTextINHtml(message.content)" class="text-body-1"></p>
+                </v-card>
+            </v-list-item>
+            <v-list-item v-if="loading_typing_indicator">
+                <TypingIndicator :p_is_typing="true" />
+            </v-list-item>
+        </v-list>
     </div>
+
+    <!-- Input para escribir mensajes -->
+    <v-footer app>
+        <div class="textarea-user-message">
+            <v-textarea v-model="user_message" placeholder="Escribe tu mensaje..." clearable :disabled="loading"
+                rows="2" color="cyan-darken-1" ref="textareaRef" @keyup.enter="handleEnterKey" auto-grow :max-rows="6"
+                variant="outlined" class="text-center"
+                :messages="'TutorAI puede cometer errores. Considere verificar la informacion proporcionada.'"
+                @input="checkWordCount" :error-messages="word_count_message">
+            </v-textarea>
+            <v-btn class="ma-1" color="cyan-darken-1" icon="mdi-send" @click="sendMessage"
+                :disabled="loading || !user_message" :loading="loading" />
+        </div>
+    </v-footer>
+    <v-dialog v-model="dialog_help" max-width="1000px" scrollable>
+        <HelpDialog @toCloseHelpDialog="closeHelpDialog" />
+    </v-dialog>
 
 </template>
 
@@ -246,10 +312,10 @@ onMounted(() => {
 .textarea-user-message {
     display: flex;
     justify-content: center;
-    flex-grow: 0.9;
     margin: auto;
     align-items: center;
     flex-wrap: wrap;
+    width: 70%;
 }
 
 .is-flex {
@@ -267,8 +333,42 @@ onMounted(() => {
     align-self: start;
 }
 
+.controls-tutor-ai {
+    position: fixed;
+    top: 50px;
+    width: fit-content;
+    right: 0px;
+    padding: 10px;
+    display: flex;
+    z-index: 999;
+    gap: 5px;
+    flex-direction: column;
+}
+
 .chat-container {
-    max-height: 100vh;
-    overflow-y: auto;
+    margin: 0px 150px;
+}
+
+/* Para dispositivos con un ancho de pantalla máximo de 1000px */
+@media only screen and (max-width: 1000px) {
+    .textarea-user-message {
+        width: 100%;
+    }
+
+    .chat-container {
+        margin: 0px 40px;
+    }
+
+}
+
+/* Para dispositivos con un ancho de pantalla máximo de 1000px */
+@media only screen and (max-width: 800px) {
+    .controls-tutor-ai {
+        flex-direction: row;
+    }
+
+    .chat-container {
+        margin: 40px 0px;
+    }
 }
 </style>
