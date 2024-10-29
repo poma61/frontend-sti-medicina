@@ -13,6 +13,7 @@ class PersonalInstitucional extends API {
                 is_active: true,
                 user_type: "",
                 picture: null,
+                permiso: [],
             },
             nombres: "",
             apellido_paterno: "",

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, defineProps, defineEmits, watch, computed, nextTick, onMounted } from 'vue';
+import { ref, defineProps, defineEmits, watch, computed, nextTick, onMounted, reactive } from 'vue';
 import PersonalInstitucional from '@/http/api/PersonalInstitucional';
 import { toastError, toastSuccess } from '@/composables/toastify';
 import app from '@/config/app';
@@ -7,13 +7,14 @@ import Camera from 'simple-vue-camera';
 import { VDateInput } from 'vuetify/labs/VDateInput'
 import { VNumberInput } from 'vuetify/labs/VNumberInput'
 import { parseISO, format } from 'date-fns'
+import Permiso from '@/http/api/Permiso';
 
 // props and emit
 const props = defineProps(["p_item_personal_institucional"])
 const emit = defineEmits(["toItemRefreshDataTable", "toNewForm"])
 
 //data
-const item_personal_institucional = ref(props.p_item_personal_institucional);
+const item_personal_institucional = ref({ ...props.p_item_personal_institucional });
 const show_password = ref(false)
 const src_image = ref(null);
 const loading_btn = ref(false);
@@ -23,16 +24,35 @@ const dialog_camera = ref(false)
 const refCamera = ref(null)
 const image_file = ref([])
 const fecha_nacimiento_date_input = ref(null)
+const permisos_data = ref([])
+const permisos_module = ref([])
+const user_permissions_module = ref([])
+const user_permissions_data = ref([])
+const loading_permisos = ref(false)
 
 // cuando el valor de props.p_item_personal_institucional cambian desde el componente padre
 // debemos actualizar item_personal_institucional
 // esto pasa porque se ejecuta el emit toNewForm del componente padre
 watch(() => props.p_item_personal_institucional, () => {
-    item_personal_institucional.value = props.p_item_personal_institucional
+    item_personal_institucional.value = { ...props.p_item_personal_institucional }
     clear()
 })
 
-//computed
+// si desabillitamos el modulo usuario o personal
+// reseteamos los valores de user_permissions_data
+watch(user_permissions_module, (new_val, old_val) => {
+
+    if (!new_val.includes('access_students')) {
+        user_permissions_data.value = []
+    }
+    if (!new_val.includes('access_institutional_staff')) {
+        user_permissions_data.value = []
+    }
+
+})
+
+
+// computed
 const showSerializerErrors = computed(() => {
     return function (field) {
         const field_parts = field.split('.')
@@ -52,19 +72,37 @@ const showSerializerErrors = computed(() => {
     }// function
 })
 
+
+//methods
+const loadPermiso = async () => {
+    loading_permisos.value = true
+    setTimeout(async () => {
+        const tema = new Permiso()
+        const response = await tema.list() 
+         loading_permisos.value = false
+        if (response.api_status) {
+            const permisos = response.payload
+            // organizamos los permisos de forma que se peuda renderizar de forma optima s
+            permisos_module.value = permisos.filter(row => row.is_type == "module")
+            permisos_data.value = permisos.filter(row => row.is_type == "data")
+
+        } else {
+            toastError(response.detail)
+        }
+    }, 200)
+
+}
+
 const formattedDate = (value) => {
     if (value) {
         item_personal_institucional.value.fecha_nacimiento = format(value, "yyyy-MM-dd")
     }
 }
 
-//methods
 const save = () => {
-
     loading_btn.value = true
-    // eliminamos picture si es de tipo string
-    //significa que no se subio ninguna imagen
-    if (typeof item_personal_institucional.value.usuario.picture === 'string' || item_personal_institucional.value.usuario.picture === null) {
+    // eliminamos picture si es de tipo string porque el backend espera un file
+    if (typeof item_personal_institucional.value.usuario.picture == 'string') {
         delete item_personal_institucional.value.usuario.picture
     }
 
@@ -194,9 +232,10 @@ onMounted(() => {
     if (item_personal_institucional.value.usuario.id > 0) {
         // Para cargar la imagen cuando se esta editando el registro
         src_image.value = app.BASE_URL + item_personal_institucional.value.usuario.picture
-        //para cargar la fecha porque la fecha de date-input es de tipo Sun Oct 27 2024 00:00:00 GMT-0400 (hora de Bolivia)
+        //para cargar la fecha porque la fecha de date-input es de tipo "Sun Oct 27 2024 00:00:00 GMT-0400 (hora de Bolivia)""
         fecha_nacimiento_date_input.value = parseISO(item_personal_institucional.value.fecha_nacimiento)
     }
+    loadPermiso()
 })
 
 </script>
@@ -256,14 +295,26 @@ onMounted(() => {
                             :error-messages="showSerializerErrors('usuario.is_active')" />
                     </v-col>
                 </v-row>
+
+                <!-- gestionar los permisos Permisos -->
                 <p class="text-h6">Permisos</p>
                 <v-divider class="mb-5" opacity="0.3"></v-divider>
-                <v-row>
-                    <v-col cols="12" sm="4">
-                        <v-switch color="indigo-lighten-1" inset />
+
+
+                <v-row v-for="(is_module, idx_module) in permisos_module" :key="idx_module" class="px-4 py-2" >
+                    <v-col cols="12" sm="12" class="pa-0" > 
+                        <v-switch :label="is_module.name" :value="is_module.code" color="success" hide-details
+                            v-model="user_permissions_module"  />
+                    </v-col>
+
+                    <v-col cols="12" sm="4" v-for="(is_data, idx_data) in permisos_data" :key="idx_data" class="pa-0" >
+                        <v-switch v-if="is_module.is_type_content == is_data.is_type_content" :label="is_data.name"
+                            :value="is_data.code" color="success" hide-details v-model="user_permissions_data" inset
+                            :disabled="!user_permissions_module.includes(is_module.code)" />
                     </v-col>
                 </v-row>
 
+                <!-- Datos del personal isntitucional -->
                 <p class="text-h6">Datos del personal institucional</p>
                 <v-divider class="mb-5" opacity="0.3"></v-divider>
                 <v-row>
@@ -404,6 +455,17 @@ onMounted(() => {
 
         </v-card>
     </v-dialog>
+
+    <v-overlay v-model="loading_permisos" class="align-center justify-center" persistent>
+        <div class="text-center">
+            <v-progress-circular color="indigo-lighten-1" indeterminate size="100"></v-progress-circular>
+            <p class="text-white text-h6">
+                Cargando datos...
+            </p>
+
+        </div>
+    </v-overlay>
+
 
 </template>
 <style scoped>
