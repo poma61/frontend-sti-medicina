@@ -74,7 +74,7 @@ onBeforeUnmount(() => {
 
 <template>
   <v-btn color="light-blue-accent-4" variant="elevated" class="ma-1" rounded @click="goBack">
-    <v-icon icon="mdi-arrow-left"></v-icon>
+    <v-icon icon="mdi-arrow-left" start></v-icon>
     Volver
   </v-btn>
 

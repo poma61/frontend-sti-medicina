@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { axiosSecure, axiosPublic } from "@/http/connection/axiosHTTP";
 import { ref } from "vue";
+import { useUserStore } from "./useUserStore";
 
 export const useAuth = defineStore("useAuth", () => {
   const auth = ref({
@@ -138,30 +139,32 @@ export const useAuth = defineStore("useAuth", () => {
           refresh_token: "",
           access_token_expiration: 0,
           refresh_token_expiration: 0,
-        });
+        })
+        const user_auth_store = useUserStore()
+        user_auth_store.resetUserAuthData()
       }
       return response.data;
     } catch (error) {
+      setAuthState({
+        state: false,
+        access_token: "",
+        refresh_token: "",
+        access_token_expiration: 0,
+        refresh_token_expiration: 0,
+      })
+      const user_auth_store = useUserStore()
+      user_auth_store.resetUserAuthData()
+
       if (error.response == undefined || error.response.data == undefined) {
         return { api_status: false, detail: error + "" };
-      }
-      // tenemos un error 401 posiblente el usuario ya se haya eliminado o este inactivo
-      if (error.response.status === 401) {
-        setAuthState({
-          state: false,
-          access_token: "",
-          refresh_token: "",
-          access_token_expiration: 0,
-          refresh_token_expiration: 0,
-        });
-        return { api_status: true, detail: "" };
       }
       return error.response.data;
     }
   }
 
   const isRefreshTokenExpired = () => {
-    const current_time_in_seconds = Math.floor(Date.now() / 1000); // Devuelve tiempo unix en milisegundos, por eso convertimos a segundos
+     // Devuelve tiempo unix en milisegundos, por eso convertimos a segundos
+    const current_time_in_seconds = Math.floor(Date.now() / 1000)
     if (isAuthenticated() && current_time_in_seconds >= getAuthState().refresh_token_expiration) {
       setAuthState({
         state: false,
@@ -169,7 +172,7 @@ export const useAuth = defineStore("useAuth", () => {
         refresh_token: "",
         access_token_expiration: 0,
         refresh_token_expiration: 0,
-      });
+      })
       return true
     } else {
       return false
@@ -177,7 +180,8 @@ export const useAuth = defineStore("useAuth", () => {
   }
 
   const isAccessTokenExpired = () => {
-    const current_time_in_seconds = Math.floor(Date.now() / 1000); // Devuelve tiempo unix en milisegundos, por eso convertimos a segundos
+     // Devuelve tiempo unix en milisegundos, por eso convertimos a segundos
+    const current_time_in_seconds = Math.floor(Date.now() / 1000)
     if (isAuthenticated() && current_time_in_seconds >= getAuthState().access_token_expiration) {
       return true;
     } else {

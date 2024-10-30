@@ -38,7 +38,7 @@ const reloadPage = () => {
 </script>
 
 <template>
-    <v-app-bar app color="light-blue-darken-3" height="50" :elevation="10">
+    <v-app-bar app color="cyan-darken-3" height="50" :elevation="10">
         <v-app-bar-nav-icon @click.stop="emit('byHiddenNavigationDrawerEmit')"></v-app-bar-nav-icon>
         <v-toolbar-title>
             <v-chip>

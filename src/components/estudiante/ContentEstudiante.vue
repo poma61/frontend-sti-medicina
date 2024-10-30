@@ -4,9 +4,7 @@ import { ref, onMounted } from 'vue'
 import { toastError, showLoadingToast, completeLoadingToast } from '@/composables/toastify'
 import FormEstudiante from '@/components/estudiante/FormEstudiante.vue'
 import { mergeIntoObject } from '@/utils/objectHelpers'
-import app from '@/config/app'
-import { format, parseISO } from 'date-fns'
-import { es } from 'date-fns/locale' // Importar la configuración regional en español
+import DetailsEstudiante from '@/components/estudiante/DetailsEstudiante.vue'
 
 //data
 const index_item = ref(-1);
@@ -150,7 +148,8 @@ onMounted(() => {
 <template>
     <div class="my-3 d-flex flex-wrap">
         <v-btn color="yellow-darken-2" variant="elevated" class="ma-1" @click="handleComponent('data_table')">
-            <v-icon icon="mdi-table" />&nbsp;Tablero
+            <v-icon icon="mdi-table" start />
+            Tablero
         </v-btn>
 
         <v-btn color="yellow-darken-2" variant="elevated" class="ma-1" @click="loadDataTable"
@@ -158,7 +157,8 @@ onMounted(() => {
             <v-icon icon="mdi-refresh" />
         </v-btn>
         <v-btn color="yellow-darken-2" variant="elevated" class="ma-1" @click="newForm">
-            <v-icon icon="mdi-plus" />&nbsp;Nuevo estudiante
+            <v-icon icon="mdi-plus" start />
+            Nuevo estudiante
         </v-btn>
 
     </div>
@@ -216,101 +216,20 @@ onMounted(() => {
 
             <v-card-actions class="justify-center">
                 <v-btn color="red" variant="elevated" @click="closeDeleteItem" class="ma-1">
-                    <v-icon icon="mdi-cancel"></v-icon>&nbsp;Cancelar
+                    <v-icon icon="mdi-cancel" start></v-icon>
+                    Cancelar
                 </v-btn>
                 <v-btn color="cyan-darken-1" variant="elevated" class="ma-1" @click="confirmDeteleItem">
-                    <v-icon icon="mdi-check-bold"></v-icon>&nbsp;Si
+                    <v-icon icon="mdi-check-bold" start></v-icon>
+                    Si
                 </v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
 
     <!-- dialog para ver detalles del estudiante -->
-    <v-dialog v-model="dialog_item_details" transition="dialog-bottom-transition" scrollable max-width="600px">
-        <v-card>
-            <v-card-title class="bg-cyan-darken-1 pa-4">
-
-                <h6 class="text-h6">
-                    <v-icon icon="mdi-account-school"></v-icon>
-                    Datos del estudiante
-                </h6>
-            </v-card-title>
-            <v-card-text>
-                <v-table>
-                    <tbody>
-                        <tr>
-                            <td colspan="2">
-                                <div class="text-center ma-2">
-                                    <v-avatar size="200" :image="app.BASE_URL + item_estudiante.usuario.picture" />
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="font-weight-bold">Nombres:</td>
-                            <td>{{ item_estudiante.nombres }}</td>
-                        </tr>
-
-                        <tr>
-                            <td class="font-weight-bold">Apellido paterno:</td>
-                            <td>{{ item_estudiante.apellido_paterno }}</td>
-                        </tr>
-
-                        <tr>
-                            <td class="font-weight-bold">Apellido materno:</td>
-                            <td>{{ item_estudiante.apellido_materno }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-weight-bold">Correo electronico:</td>
-                            <td> <v-chip color="cyan-darken-2" label>{{ item_estudiante.usuario.email }} </v-chip></td>
-                        </tr>
-                        <tr>
-                            <td class="font-weight-bold">C.I.:</td>
-                            <td>{{ item_estudiante.ci }}  {{ item_estudiante.ci_expedido }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-weight-bold">Genero:</td>
-                            <td>{{ item_estudiante.genero }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-weight-bold">Fecha nacimiento:</td>
-                            <td>{{ format(parseISO(item_estudiante.fecha_nacimiento), 'dd/MMMM/yyyy', { locale: es }) }}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="font-weight-bold">Número de contacto:</td>
-                            <td> <v-chip color="cyan-darken-2" label> {{ item_estudiante.numero_contacto }} </v-chip>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td class="font-weight-bold">Matricula universitaria:</td>
-                            <td> <v-chip color="cyan-darken-2" label>{{ item_estudiante.matricula_univ }} </v-chip></td>
-                        </tr>
-                        <tr>
-                            <td class="font-weight-bold">Internado Rotatorio:</td>
-                            <td>{{ item_estudiante.internado_rot }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-weight-bold">Dirección:</td>
-                            <td>{{ item_estudiante.direccion }}</td>
-                        </tr>
-
-                        <tr>
-                            <td class="font-weight-bold">Observaciones:</td>
-                            <td>{{ item_estudiante.observaciones }}</td>
-                        </tr>
-
-                    </tbody>
-                </v-table>
-            </v-card-text>
-            <v-divider></v-divider>
-            <v-card-actions>
-                <v-btn @click="closeItemDetails" color="cyan-darken-1" variant="elevated">
-                    <v-icon icon="mdi-close"></v-icon>
-                    Cerrar
-                </v-btn>
-            </v-card-actions>
-        </v-card>
+    <v-dialog v-model="dialog_item_details" transition="dialog-top-transition" scrollable max-width="600px">
+        <DetailsEstudiante :p_item_estudiante="item_estudiante" @toCloseItemDetails="closeItemDetails" />
     </v-dialog>
 
 </template>

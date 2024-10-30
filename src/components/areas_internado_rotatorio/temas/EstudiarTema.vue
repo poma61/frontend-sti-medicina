@@ -89,20 +89,20 @@ const handlePdfInit = (pdf) => {
     </div>
     <div class="controls" v-if="view_controls">
         <v-btn @click="zoomIn" :disabled="button_disable" color="indigo-lighten-1">
-            <v-icon icon="mdi-magnify-plus"></v-icon>
+            <v-icon icon="mdi-magnify-plus" start></v-icon>
             Zoom
         </v-btn>
         <v-btn @click="zoomOut" :disabled="button_disable" color="indigo-lighten-1">
-            <v-icon icon="mdi-magnify-minus"></v-icon>
+            <v-icon icon="mdi-magnify-minus" start></v-icon>
             Zoom
         </v-btn>
         <v-btn @click="goToPreviousPage" :disabled="button_disable" color="indigo-lighten-1">
-            <v-icon icon="mdi-arrow-left-thin-circle-outline"></v-icon>
+            <v-icon icon="mdi-arrow-left-thin-circle-outline" start></v-icon>
             Anterior
         </v-btn>
         <v-btn @click="goToNextPage" :disabled="button_disable" color="indigo-lighten-1">
             Siguiente
-            <v-icon icon="mdi-arrow-right-thin-circle-outline"></v-icon>
+            <v-icon icon="mdi-arrow-right-thin-circle-outline" end></v-icon>
         </v-btn>
         <span>
             Página

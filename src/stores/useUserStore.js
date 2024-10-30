@@ -9,19 +9,20 @@ export const useUserStore = defineStore('user', () => {
     apellido_paterno: "",
     apellido_materno: "",
     picture: "",
-  });
+  })
 
-  const is_data_auth = ref(false); // Estado para saber si los datos ya fueron solicitados
+  // Devuelve tiempo unix en milisegundos, por eso convertimos a segundos
+  const is_data_auth = ref(false)
 
   // Método para obtener datos del usuario
   const userAuthData = async () => {
-    if (is_data_auth.value){
+    if (is_data_auth.value) {
       return // No hacer la solicitud si ya se han solicitado los datos
-    } 
+    }
 
     const auth = useAuth()
     const response = await auth.userData()
-    
+
     if (response.api_status) {
       user.value = response.payload;
       is_data_auth.value = true // Marcar como que los datos han sido solicitados
@@ -30,5 +31,15 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  return { user, userAuthData };
+  const resetUserAuthData = () => {
+    user.value = {
+      nombres: "",
+      apellido_paterno: "",
+      apellido_materno: "",
+      picture: "",
+    }
+    is_data_auth.value = false
+  }
+
+  return { user, userAuthData, resetUserAuthData };
 })

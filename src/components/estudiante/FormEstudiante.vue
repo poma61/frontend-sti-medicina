@@ -206,7 +206,7 @@ onMounted(() => {
             <span class="text-h6 text-wrap" v-if="item_estudiante.usuario.id == 0"> Registrar nuevo estudiante</span>
             <span class="text-h6 text-wrap" v-else> Actualizar datos del estudiante</span>
         </v-card-title>
-        
+
         <!-- formulairo -->
         <v-card-text class="pa-4">
             <p class="text-red text-subtitle-1">Los campos marcados con (*) son obligatorios.</p>
@@ -216,9 +216,8 @@ onMounted(() => {
                 <v-row>
                     <v-col cols="12" sm="4">
                         <v-text-field v-model="item_estudiante.usuario.user" label="Usuario (*)"
-                            color="indigo-lighten-1" clearable :error-messages="showSerializerErrors('usuario.user')" 
-                            @input="filterSpecialChars"
-                            />
+                            color="indigo-lighten-1" clearable :error-messages="showSerializerErrors('usuario.user')"
+                            @input="filterSpecialChars" />
                     </v-col>
 
                     <v-col cols="12" sm="4">
@@ -350,7 +349,8 @@ onMounted(() => {
                 </div>
 
                 <v-btn type="submit" color="indigo-lighten-1" variant="elevated" :loading="loading_btn">
-                    <v-icon icon="mdi-content-save-outline"></v-icon>&nbsp;Guardar
+                    <v-icon icon="mdi-content-save-outline" start></v-icon>
+                    Guardar
                 </v-btn>
 
             </v-form>
@@ -377,7 +377,8 @@ onMounted(() => {
             <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn color="red" variant="elevated" @click="closeCamera">
-                    <v-icon icon="mdi-close"></v-icon>&nbsp;Cerrar
+                    <v-icon icon="mdi-close" start></v-icon>
+                    Cerrar
                 </v-btn>
                 <v-btn color="indigo-lighten-1" variant="elevated" @click="capturePhoto"
                     :disabled="devices_camera.length == 0 ? true : false">

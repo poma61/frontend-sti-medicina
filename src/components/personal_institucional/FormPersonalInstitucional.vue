@@ -1,20 +1,20 @@
 <script setup>
-import { ref, defineProps, defineEmits, watch, computed, nextTick, onMounted, reactive } from 'vue';
-import PersonalInstitucional from '@/http/api/PersonalInstitucional';
-import { toastError, toastSuccess } from '@/composables/toastify';
-import app from '@/config/app';
-import Camera from 'simple-vue-camera';
+import { ref, defineProps, defineEmits, watch, computed, nextTick, onMounted } from 'vue'
+import PersonalInstitucional from '@/http/api/PersonalInstitucional'
+import { toastError, toastSuccess } from '@/composables/toastify'
+import app from '@/config/app'
+import Camera from 'simple-vue-camera'
 import { VDateInput } from 'vuetify/labs/VDateInput'
 import { VNumberInput } from 'vuetify/labs/VNumberInput'
 import { parseISO, format } from 'date-fns'
-import Permiso from '@/http/api/Permiso';
+import Permiso from '@/http/api/Permiso'
 
 // props and emit
 const props = defineProps(["p_item_personal_institucional"])
 const emit = defineEmits(["toItemRefreshDataTable", "toNewForm"])
 
 //data
-const item_personal_institucional = ref({ ...props.p_item_personal_institucional });
+const item_personal_institucional = ref({ ...new PersonalInstitucional().collectPayload() }) // asignamos para evitar errores
 const show_password = ref(false)
 const src_image = ref(null);
 const loading_btn = ref(false);
@@ -24,11 +24,8 @@ const dialog_camera = ref(false)
 const refCamera = ref(null)
 const image_file = ref([])
 const fecha_nacimiento_date_input = ref(null)
-const permisos_data = ref([])
-const permisos_module = ref([])
-const user_permissions_module = ref([])
-const user_permissions_data = ref([])
-const loading_permisos = ref(false)
+const permisos = ref([])
+const loading_form = ref(false)
 
 // cuando el valor de props.p_item_personal_institucional cambian desde el componente padre
 // debemos actualizar item_personal_institucional
@@ -37,20 +34,6 @@ watch(() => props.p_item_personal_institucional, () => {
     item_personal_institucional.value = { ...props.p_item_personal_institucional }
     clear()
 })
-
-// si desabillitamos el modulo usuario o personal
-// reseteamos los valores de user_permissions_data
-watch(user_permissions_module, (new_val, old_val) => {
-
-    if (!new_val.includes('access_students')) {
-        user_permissions_data.value = []
-    }
-    if (!new_val.includes('access_institutional_staff')) {
-        user_permissions_data.value = []
-    }
-
-})
-
 
 // computed
 const showSerializerErrors = computed(() => {
@@ -72,25 +55,30 @@ const showSerializerErrors = computed(() => {
     }// function
 })
 
-
 //methods
 const loadPermiso = async () => {
-    loading_permisos.value = true
-    setTimeout(async () => {
-        const tema = new Permiso()
-        const response = await tema.list() 
-         loading_permisos.value = false
-        if (response.api_status) {
-            const permisos = response.payload
-            // organizamos los permisos de forma que se peuda renderizar de forma optima s
-            permisos_module.value = permisos.filter(row => row.is_type == "module")
-            permisos_data.value = permisos.filter(row => row.is_type == "data")
+    const permiso = new Permiso()
+    const response = await permiso.list()
+    if (response.api_status) {
+        const is_permisos = response.payload
 
-        } else {
-            toastError(response.detail)
-        }
-    }, 200)
+        // Recorrer todos los módulos únicos en `is_permisos`
+        is_permisos.forEach((element) => {
+            // Verificar si ya existe el módulo en `permisos.value`
+            let existing_module = permisos.value.find((item) => item.module == element.module);
 
+            if (!existing_module) {
+                // Si no existe, creamos una nueva entrada para el módulo
+                permisos.value.push({
+                    module: element.module,
+                    group: is_permisos.filter(row => row.module == element.module),
+                })
+            }
+        })
+
+    } else {
+        toastError(response.detail)
+    }
 }
 
 const formattedDate = (value) => {
@@ -145,6 +133,7 @@ const save = () => {
             }
         }
     }, 200)
+
 }// save
 
 //visualizar imagen cargada
@@ -219,25 +208,37 @@ const changeCameraDevice = async (device_id) => {
 const filterSpecialChars = (event) => {
     const value = event.target.value;
     const filtered_value = value.replace(/[^A-Za-z0-9]/g, ""); // Remueve caracteres especiales y espacios
-    item_personal_institucional.value.usuario.user = filtered_value;
+    item_personal_institucional.value.usuario.user = filtered_value
 }
 
 const filterSpaces = (event) => {
     const value = event.target.value;
     const filtered_value = value.replace(/\s/g, ""); // Elimina todos los espacios
-    item_personal_institucional.value.usuario.password = filtered_value;
+    item_personal_institucional.value.usuario.password = filtered_value
 }
 
-onMounted(() => {
+const isValueForm = () => {
+    //cargamos los datos de usuario
+    item_personal_institucional.value = { ...props.p_item_personal_institucional }
+
+    // si el formulariose esta editando
     if (item_personal_institucional.value.usuario.id > 0) {
         // Para cargar la imagen cuando se esta editando el registro
         src_image.value = app.BASE_URL + item_personal_institucional.value.usuario.picture
         //para cargar la fecha porque la fecha de date-input es de tipo "Sun Oct 27 2024 00:00:00 GMT-0400 (hora de Bolivia)""
         fecha_nacimiento_date_input.value = parseISO(item_personal_institucional.value.fecha_nacimiento)
     }
-    loadPermiso()
-})
+}
 
+onMounted(async () => {
+    loading_form.value = true
+    setTimeout(async () => {
+        await loadPermiso()
+        loading_form.value = false
+        isValueForm()
+    }, 200)
+
+})
 </script>
 
 <template>
@@ -300,17 +301,14 @@ onMounted(() => {
                 <p class="text-h6">Permisos</p>
                 <v-divider class="mb-5" opacity="0.3"></v-divider>
 
-
-                <v-row v-for="(is_module, idx_module) in permisos_module" :key="idx_module" class="px-4 py-2" >
-                    <v-col cols="12" sm="12" class="pa-0" > 
-                        <v-switch :label="is_module.name" :value="is_module.code" color="success" hide-details
-                            v-model="user_permissions_module"  />
+                <v-row v-for="(row, idx) in permisos" :key="idx">
+                    <v-col cols="12" sm="12" class="py-0 px-3">
+                        <p class="text-body-1">{{ row.module }}</p>
                     </v-col>
 
-                    <v-col cols="12" sm="4" v-for="(is_data, idx_data) in permisos_data" :key="idx_data" class="pa-0" >
-                        <v-switch v-if="is_module.is_type_content == is_data.is_type_content" :label="is_data.name"
-                            :value="is_data.code" color="success" hide-details v-model="user_permissions_data" inset
-                            :disabled="!user_permissions_module.includes(is_module.code)" />
+                    <v-col cols="12" sm="4" v-for="(permiso, id) in row.group" :key="id">
+                        <v-switch :label="permiso.name" :value="permiso.code" color="success" hide-details inset
+                            v-model="item_personal_institucional.usuario.permisos" />
                     </v-col>
                 </v-row>
 
@@ -352,7 +350,6 @@ onMounted(() => {
                     </v-col>
 
                     <v-col cols="12" sm="4">
-
                         <v-number-input :min="0" v-model="item_personal_institucional.numero_contacto"
                             :model-value="Number(item_personal_institucional.numero_contacto)"
                             label="N° de contacto (*)" color="indigo-lighten-1"
@@ -372,7 +369,6 @@ onMounted(() => {
                             color="indigo-lighten-1" :error-messages="showSerializerErrors('grado_academico')"
                             clearable />
                     </v-col>
-
                 </v-row>
 
                 <v-row>
@@ -418,7 +414,8 @@ onMounted(() => {
                 </div>
 
                 <v-btn type="submit" color="indigo-lighten-1" variant="elevated" :loading="loading_btn">
-                    <v-icon icon="mdi-content-save-outline"></v-icon>&nbsp;Guardar
+                    <v-icon icon="mdi-content-save-outline" start></v-icon>
+                    Guardar
                 </v-btn>
 
             </v-form>
@@ -445,7 +442,8 @@ onMounted(() => {
             <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn color="red" variant="elevated" @click="closeCamera">
-                    <v-icon icon="mdi-close"></v-icon>&nbsp;Cerrar
+                    <v-icon icon="mdi-close" start></v-icon>
+                    Cerrar
                 </v-btn>
                 <v-btn color="indigo-lighten-1" variant="elevated" @click="capturePhoto"
                     :disabled="devices_camera.length == 0 ? true : false">
@@ -456,18 +454,16 @@ onMounted(() => {
         </v-card>
     </v-dialog>
 
-    <v-overlay v-model="loading_permisos" class="align-center justify-center" persistent>
+    <v-overlay v-model="loading_form" class="align-center justify-center" persistent>
         <div class="text-center">
             <v-progress-circular color="indigo-lighten-1" indeterminate size="100"></v-progress-circular>
             <p class="text-white text-h6">
                 Cargando datos...
             </p>
-
         </div>
     </v-overlay>
-
-
 </template>
+
 <style scoped>
 .image-content {
     border: 1px dashed #000;

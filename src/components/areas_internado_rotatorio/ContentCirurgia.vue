@@ -47,8 +47,8 @@ onMounted(() => {
     <v-card class="mt-2 as-container-data-iterator" elevation="0">
         <v-overlay v-model="loading_data_iterator" class="align-center justify-center" persistent contained>
             <div class="text-center">
-                <v-progress-circular color="light-blue-accent-4" indeterminate size="100"></v-progress-circular>
-                <p class="text-white text-h6">Cargando datos...</p>
+                <v-progress-circular color="indigo-darken-1" indeterminate size="100"></v-progress-circular>
+                <p class="text-white text-h6">Cargando temas...</p>
             </div>
         </v-overlay>
 
@@ -57,7 +57,7 @@ onMounted(() => {
 
             <template v-slot:header>
                 <v-text-field v-model="search_item" clearable density="comfortable" hide-details
-                    placeholder="Buscar temas..." prepend-inner-icon="mdi-magnify" color="secondary" class="pa-2" />
+                    placeholder="Buscar temas..." prepend-inner-icon="mdi-magnify" color="indigo-darken-1" class="pa-2" />
             </template>
 
             <template v-slot:default="{ items }">
@@ -75,10 +75,10 @@ onMounted(() => {
                                 </v-card-text>
 
                                 <v-card-actions>
-                                    <v-divider color="secondary" opacity="0.4"></v-divider>
-                                    <v-btn color="secondary" variant="tonal" class="ma-1" @click="showTema(item.raw)">
+                                    <v-divider color="indigo-darken-1" opacity="0.4"></v-divider>
+                                    <v-btn color="indigo-darken-1" variant="tonal" class="ma-1" @click="showTema(item.raw)">
                                         Ver tema
-                                        <v-icon icon="mdi-arrow-right-box"></v-icon>
+                                        <v-icon icon="mdi-arrow-right-box" end></v-icon>
                                     </v-btn>
                                 </v-card-actions>
                             </v-card>

@@ -4,9 +4,8 @@ import { ref, onMounted } from 'vue'
 import { toastError, showLoadingToast, completeLoadingToast } from '@/composables/toastify'
 import FormPersonalInstitucional from '@/components/personal_institucional/FormPersonalInstitucional.vue'
 import { mergeIntoObject } from '@/utils/objectHelpers'
-import app from '@/config/app'
-import { format, parseISO } from 'date-fns'
-import { es } from 'date-fns/locale' // Importar la configuración regional en español
+import DetailsPersonalInstitucional from '@/components/personal_institucional/DetailsPersonalInstitucional.vue'
+import Permiso from '@/http/api/Permiso'
 
 //data
 const index_item = ref(-1);
@@ -19,6 +18,8 @@ const dialog_delete = ref(false);
 const dialog_item_details = ref(false);
 const item_personal_institucional = ref({});
 const loading_data_table = ref(null);
+const loading_item_details = ref(false);
+const list_permisos = ref([])
 const items_per_page_options = ref([
     { value: 10, title: '10' },
     { value: 25, title: '25' },
@@ -66,8 +67,21 @@ const editForm = (item) => {
 
 const openItemDetails = (item) => {
     clear()
-    dialog_item_details.value = true
-    item_personal_institucional.value = { ...item }
+    loading_item_details.value = true
+    setTimeout(async () => {
+        const permiso = new Permiso()
+        const response = await permiso.list()
+        loading_item_details.value = false
+        if (response.api_status) {
+            list_permisos.value = response.payload
+            item_personal_institucional.value = { ...item }
+            dialog_item_details.value = true
+
+        } else {
+            toastError(response.detail)
+        }
+
+    }, 200);
 }
 
 const closeItemDetails = () => {
@@ -136,21 +150,22 @@ const itemRefreshDataTable = (type, item) => {
 }
 
 const clear = () => {
-    item_personal_institucional.value = {};
-    index_item.value = -1;
+    item_personal_institucional.value = {}
+    index_item.value = -1
+    list_permisos.value = []
 }
 
 onMounted(() => {
     handleComponent('data_table')
     loadDataTable()
 })
-
 </script>
 
 <template>
     <div class="my-3 d-flex flex-wrap">
         <v-btn color="teal-lighten-2" variant="elevated" class="ma-1" @click="handleComponent('data_table')">
-            <v-icon icon="mdi-table" />&nbsp;Tablero
+            <v-icon icon="mdi-table" start />
+            Tablero
         </v-btn>
 
         <v-btn color="teal-lighten-2" variant="elevated" class="ma-1" @click="loadDataTable"
@@ -158,7 +173,8 @@ onMounted(() => {
             <v-icon icon="mdi-refresh" />
         </v-btn>
         <v-btn color="teal-lighten-2" variant="elevated" class="ma-1" @click="newForm">
-            <v-icon icon="mdi-plus" />&nbsp;Nuevo personal
+            <v-icon icon="mdi-plus" start />
+            Nuevo personal
         </v-btn>
 
     </div>
@@ -217,117 +233,29 @@ onMounted(() => {
 
             <v-card-actions class="justify-center">
                 <v-btn color="red" variant="elevated" @click="closeDeleteItem" class="ma-1">
-                    <v-icon icon="mdi-cancel"></v-icon>&nbsp;Cancelar
+                    <v-icon icon="mdi-cancel" start></v-icon>
+                    Cancelar
                 </v-btn>
                 <v-btn color="teal-lighten-2" variant="elevated" class="ma-1" @click="confirmDeteleItem">
-                    <v-icon icon="mdi-check-bold"></v-icon>&nbsp;Si
+                    <v-icon icon="mdi-check-bold" start></v-icon>
+                    Si
                 </v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
 
     <!-- dialog para ver detalles del personal_institucional -->
-    <v-dialog v-model="dialog_item_details" transition="dialog-bottom-transition" scrollable max-width="600px">
-        <v-card>
-            <v-card-title class="bg-teal-lighten-2 pa-4">
-
-                <h6 class="text-h6">
-                    <v-icon icon="mdi-home-city-outline"></v-icon>
-                    Datos del personal institucional
-                </h6>
-            </v-card-title>
-            <v-card-text>
-                <v-table>
-                    <tbody>
-                        <tr>
-                            <td colspan="2">
-                                <div class="text-center ma-2">
-                                    <v-avatar size="200"
-                                        :image="app.BASE_URL + item_personal_institucional.usuario.picture" />
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="font-weight-bold">Nombres:</td>
-                            <td>{{ item_personal_institucional.nombres }}</td>
-                        </tr>
-
-                        <tr>
-                            <td class="font-weight-bold">Apellido paterno:</td>
-                            <td>{{ item_personal_institucional.apellido_paterno }}</td>
-                        </tr>
-
-                        <tr>
-                            <td class="font-weight-bold">Apellido materno:</td>
-                            <td>{{ item_personal_institucional.apellido_materno }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-weight-bold">Correo electronico:</td>
-                            <td> <v-chip color="cyan-darken-2" label>{{ item_personal_institucional.usuario.email }}
-                                </v-chip></td>
-                        </tr>
-                        <tr>
-                            <td class="font-weight-bold">Tipo de usuario:</td>
-                            <td> <v-chip color="cyan-darken-2" label>
-                                {{ item_personal_institucional.usuario.user_type }}
-                                </v-chip></td>
-                        </tr>
-
-                        <tr>
-                            <td class="font-weight-bold">C.I.:</td>
-                            <td>
-                                <v-chip color="cyan-darken-2" label>
-                                    {{ item_personal_institucional.ci }} {{ item_personal_institucional.ci_expedido }}
-                                </v-chip>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="font-weight-bold">Genero:</td>
-                            <td>{{ item_personal_institucional.genero }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-weight-bold">Fecha nacimiento:</td>
-                            <td>{{ format(parseISO(item_personal_institucional.fecha_nacimiento), 'dd/MMMM/yyyy', {
-                                locale:
-                                es }) }}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="font-weight-bold">Número de contacto:</td>
-                            <td> <v-chip color="cyan-darken-2" label> {{ item_personal_institucional.numero_contacto }}
-                                </v-chip>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td class="font-weight-bold">Cargo:</td>
-                            <td> {{ item_personal_institucional.cargo }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-weight-bold">Grado academico:</td>
-                            <td>{{ item_personal_institucional.grado_academico }}</td>
-                        </tr>
-                        <tr>
-                            <td class="font-weight-bold">Dirección:</td>
-                            <td>{{ item_personal_institucional.direccion }}</td>
-                        </tr>
-
-                        <tr>
-                            <td class="font-weight-bold">Observaciones:</td>
-                            <td>{{ item_personal_institucional.observaciones }}</td>
-                        </tr>
-
-                    </tbody>
-                </v-table>
-            </v-card-text>
-            <v-divider></v-divider>
-            <v-card-actions>
-                <v-btn @click="closeItemDetails" color="teal-lighten-2" variant="elevated">
-                    <v-icon icon="mdi-close"></v-icon>
-                    Cerrar
-                </v-btn>
-            </v-card-actions>
-        </v-card>
+    <v-dialog v-model="dialog_item_details" transition="dialog-bottom-transition" scrollable max-width="700px">
+        <DetailsPersonalInstitucional :p_item_personal_institucional="item_personal_institucional"
+            :p_list_permisos="list_permisos" @toCloseItemDetails="closeItemDetails" />
     </v-dialog>
 
+    <v-overlay v-model="loading_item_details" class="align-center justify-center" persistent>
+        <div class="text-center">
+            <v-progress-circular color="cyan-darken-1" indeterminate size="100"></v-progress-circular>
+            <p class="text-white text-h6">
+                Cargando datos...
+            </p>
+        </div>
+    </v-overlay>
 </template>

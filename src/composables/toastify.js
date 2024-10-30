@@ -2,20 +2,22 @@ import { toast } from "vue3-toastify";
 
 const options = {
     position: 'bottom-right',
-    autoClose: 4000,
-    theme: "colored",
-    hideProgressBar: false,
+    autoClose: 1000,
+    theme: "colored", 
+    hideProgressBar: true,
     closeOnClick: true,
     closeButton: true,
+    dangerouslyHTMLString: true,
+    transition: "flip",
 }
 
 export const toastSuccess = (detail) => {
     try {
-        toast.success(detail, options)
-    } catch (error) {
+        toast.success(detail, options) 
+    } catch (error) { 
         console.warning(error + "")
     }
-}
+} 
 
 export const toastError = (detail) => {
     try {
@@ -51,7 +53,7 @@ export const showLoadingToast = (detail) => {
     } catch (error) {
         console.warning(error + "")
     }
-}
+} 
 
 // Función para finalizar un toast de carga
 export const completeLoadingToast = (id, detail, type = null) => {
