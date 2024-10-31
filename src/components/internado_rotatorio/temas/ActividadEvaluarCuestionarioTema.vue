@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, nextTick, onUnmounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, nextTick, onBeforeUnmount } from 'vue';
 import ActividadTema from '@/http/api/ActividadTema';
 import { completeLoadingToast, showLoadingToast, toastError } from '@/composables/toastify';
 import Tema from '@/http/api/Tema';

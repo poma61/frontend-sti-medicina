@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { defineEmits, defineProps } from 'vue';
-import { useAuth } from '@/stores/useAuth';
+import { useAuth } from '@/stores/useAuthenticateStore';
 import { useRouter } from 'vue-router';
 import { toastError } from '@/composables/toastify';
 import app from '@/config/app';
@@ -46,7 +45,7 @@ const reloadPage = () => {
             </v-chip>
         </v-toolbar-title>
         <v-spacer></v-spacer>
-        <v-btn :icon="theme_store.getThemeState() == 'dark' ?  'mdi-weather-night': 'mdi-weather-sunny' "
+        <v-btn :icon="theme_store.getThemeState() == 'dark' ? 'mdi-weather-night' : 'mdi-weather-sunny'"
             @click="theme_store.toggleTheme" />
 
         <v-btn icon="mdi-refresh" @click="reloadPage" />
@@ -65,18 +64,23 @@ const reloadPage = () => {
                 <v-list>
                     <v-list-item :prepend-avatar="app.BASE_URL + props.p_user.picture"
                         :title="`${props.p_user.nombres} ${props.p_user.apellido_paterno} ${props.p_user.apellido_materno}`"
-                        subtitle="Estudiante">
+                        :subtitle="`${props.p_user.user_type}`">
                     </v-list-item>
                 </v-list>
 
                 <v-list>
                     <v-list-item link :to="{ name: 'n-perfil' }">
-                        <v-icon icon="mdi-account" color="success"></v-icon>
+                        <v-icon icon="mdi-account" color="success" start></v-icon>
                         <span>Perfil</span>
                     </v-list-item>
 
+                    <v-list-item link v-if="props.p_user.user_type == 'estudiante'">
+                        <v-icon icon="mdi-progress-clock" color="info" start></v-icon>
+                        <span>Progreso de estudio</span>
+                    </v-list-item>
+
                     <v-list-item @click="dialog = true">
-                        <v-icon icon="mdi-close" color="red"></v-icon>
+                        <v-icon icon="mdi-close" color="red" start></v-icon>
                         <span>Salir</span>
                     </v-list-item>
 

@@ -1,5 +1,5 @@
 import app from "@/config/app";
-import { useAuth } from "@/stores/useAuth";
+import { useAuth } from "@/stores/useAuthenticateStore";
 
 // Función para hacer una solicitud Fetch segura
 const fetchSecure = async (url, options = {}) => {

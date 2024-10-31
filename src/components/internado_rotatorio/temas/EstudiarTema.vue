@@ -1,5 +1,5 @@
 <script setup>
-import { ref, nextTick, defineProps } from 'vue'
+import { ref, nextTick } from 'vue'
 import * as pdfjsLib from 'pdfjs-dist'
 import PdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url'
 import PDF from 'pdf-vue3'
@@ -83,7 +83,7 @@ const handlePdfInit = (pdf) => {
     <div class="pdf">
         <PDF  :src="props.p_pdf_source"   :page="current_page"
             :style="{ transform: `scale(${scale})`, transformOrigin: '0 0' }" :showProgress="true"
-            :progressColor="'#87ceeb'" @onPageChange="handlePageChange" @onProgress="handleProgress"
+            :progressColor="'#87ceeb'" @onPageChange="handlePageChange"
             @onPdfInit="handlePdfInit" @onComplete="handleComplete" :disableStream="true" :disableAutoFetch="true"
             :disableRange="true" />
     </div>

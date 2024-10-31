@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
-import { useAuth } from "@/stores/useAuth";
+import { useAuth } from "@/stores/useAuthenticateStore";
 import logo from "@/assets/images/logo-medicina.png";
 import { toastError } from "@/composables/toastify";
 
@@ -21,7 +21,8 @@ const login = () => {
     const auth = useAuth()
     const auth_success = await auth.loginUser(user.value, password.value);
     if (auth_success.api_status) {
-      router.push("/home");
+           
+      router.push({ name: 'n-home' });
     } else {
       toastError(auth_success.detail)
     }

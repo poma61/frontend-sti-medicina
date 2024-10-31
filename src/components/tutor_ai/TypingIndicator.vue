@@ -1,5 +1,4 @@
 <script setup>
-import { defineProps } from 'vue';
 const props = defineProps(['p_is_typing']);
 </script>
 

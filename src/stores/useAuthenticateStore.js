@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { axiosSecure, axiosPublic } from "@/http/connection/axiosHTTP";
 import { ref } from "vue";
-import { useUserStore } from "./useUserStore";
+import { toastError } from "@/composables/toastify";
 
 export const useAuth = defineStore("useAuth", () => {
   const auth = ref({
@@ -10,15 +10,15 @@ export const useAuth = defineStore("useAuth", () => {
     refresh_token: "",
     access_token_expiration: 0,
     refresh_token_expiration: 0,
-  });
+  })
 
   const initializeAuthState = () => {
     if (localStorage.getItem("sessionAuth") == null || localStorage.getItem("sessionAuth") == undefined) {
       localStorage.setItem("sessionAuth", JSON.stringify(auth.value));
     }
-
   }
-  initializeAuthState();
+  
+  initializeAuthState()
 
   const setAuthState = (is_auth) => {
     auth.value.state = is_auth.state
@@ -47,7 +47,7 @@ export const useAuth = defineStore("useAuth", () => {
           refresh_token: resolve.data.refresh_token,
           access_token_expiration: resolve.data.access_token_expiration,
           refresh_token_expiration: resolve.data.refresh_token_expiration,
-        });
+        })
       }
 
       return resolve.data;
@@ -77,48 +77,9 @@ export const useAuth = defineStore("useAuth", () => {
           refresh_token: is_refresh_token,  // Mantener el refresh token
           access_token_expiration: resolve.data.access_token_expiration,
           refresh_token_expiration: is_refresh_token_expiration,// Mantener el refresh token expiration
-        });
+        })
       }
       return resolve.data;
-    } catch (error) {
-      if (error.response == undefined || error.response.data == undefined) {
-        return { api_status: false, detail: error + "" };
-      }
-      return error.response.data;
-    }
-  }
-
-  const userData = async () => {
-    try {
-      const resolve = await axiosSecure.post("auth/me/");
-      return resolve.data
-    } catch (error) {
-      if (error.response == undefined || error.response.data == undefined) {
-        return { api_status: false, detail: error + "" }
-      }
-      return error.response.data
-    }
-  }
-
-  const hasRole = (roles) => {
-    // Verifica si el valor de getAuthState().role se encuentra en el array roles
-    //devuelve true si el valor getAuthState().role esta en el array roles;
-    // return roles.includes(getAuthState().role);
-    return true;
-  }
-
-  const updateAuthUserData = async (user_auth_data) => {
-    try {
-      const config = {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'multipart/form-data'// de esta forma podemos enviar imagenes
-        }
-      }
-      const response = await axiosSecure.post("auth/user-update/", {
-        ...user_auth_data,
-      }, config);
-      return response.data;
     } catch (error) {
       if (error.response == undefined || error.response.data == undefined) {
         return { api_status: false, detail: error + "" };
@@ -131,20 +92,7 @@ export const useAuth = defineStore("useAuth", () => {
     try {
       const response = await axiosSecure.post("auth/logout/", {
         refresh_token: getAuthState().refresh_token
-      });
-      if (response.data.api_status) {
-        setAuthState({
-          state: false,
-          access_token: "",
-          refresh_token: "",
-          access_token_expiration: 0,
-          refresh_token_expiration: 0,
-        })
-        const user_auth_store = useUserStore()
-        user_auth_store.resetUserAuthData()
-      }
-      return response.data;
-    } catch (error) {
+      })
       setAuthState({
         state: false,
         access_token: "",
@@ -152,18 +100,31 @@ export const useAuth = defineStore("useAuth", () => {
         access_token_expiration: 0,
         refresh_token_expiration: 0,
       })
-      const user_auth_store = useUserStore()
-      user_auth_store.resetUserAuthData()
+      useUser().revokeIsUser()
+      usePermission().revokePermission()
+
+      return response.data;
+    } catch (error) {
+
+      setAuthState({
+        state: false,
+        access_token: "",
+        refresh_token: "",
+        access_token_expiration: 0,
+        refresh_token_expiration: 0,
+      })
+      useUser().revokeIsUser()
+      usePermission().revokePermission()
 
       if (error.response == undefined || error.response.data == undefined) {
-        return { api_status: false, detail: error + "" };
+        return { api_status: false, detail: error + "" }
       }
-      return error.response.data;
+      return error.response.data
     }
   }
 
   const isRefreshTokenExpired = () => {
-     // Devuelve tiempo unix en milisegundos, por eso convertimos a segundos
+    // Devuelve tiempo unix en milisegundos, por eso convertimos a segundos
     const current_time_in_seconds = Math.floor(Date.now() / 1000)
     if (isAuthenticated() && current_time_in_seconds >= getAuthState().refresh_token_expiration) {
       setAuthState({
@@ -180,12 +141,12 @@ export const useAuth = defineStore("useAuth", () => {
   }
 
   const isAccessTokenExpired = () => {
-     // Devuelve tiempo unix en milisegundos, por eso convertimos a segundos
+    // Devuelve tiempo unix en milisegundos, por eso convertimos a segundos
     const current_time_in_seconds = Math.floor(Date.now() / 1000)
     if (isAuthenticated() && current_time_in_seconds >= getAuthState().access_token_expiration) {
-      return true;
+      return true
     } else {
-      return false;
+      return false
     }
   }
 
@@ -195,9 +156,6 @@ export const useAuth = defineStore("useAuth", () => {
   return {
     getAuthState,
     loginUser,
-    userData,
-    hasRole,
-    updateAuthUserData,
     logoutUser,
     isRefreshTokenExpired,
     isAccessTokenExpired,
@@ -205,3 +163,116 @@ export const useAuth = defineStore("useAuth", () => {
     refreshAccessToken,
   }
 })
+
+
+
+export const useUser = defineStore('useUser', () => {
+  const user = ref({
+    user: "",
+    user_type: "",
+    nombres: "",
+    apellido_paterno: "",
+    apellido_materno: "",
+    ci: "",
+    ci_expedido: "",
+    numero_contacto: "",
+    email: "",
+    direccion: "",
+    picture: "",
+  })
+  const user_loaded = ref(false)
+
+  const isUser = async () => {
+    if (user_loaded.value) {
+      return
+    }
+
+    try {
+      const resolve = await axiosSecure.post("auth/me/")
+      user.value = resolve.data.payload
+      // Marcar como que los datos han sido solicitados
+      user_loaded.value = true
+
+    } catch (error) {
+      if (error.response == undefined || error.response.data == undefined) {
+        toastError(error + "")
+      }
+      toastError(error.response.data.detail)
+    }
+  }
+
+  const updateUser = async (user_data) => {
+    try {
+      const config = {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'multipart/form-data'// de esta forma podemos enviar imagenes
+        }
+      }
+      const response = await axiosSecure.post("auth/user-update/", {
+        ...user_data,
+      }, config);
+      return response.data;
+    } catch (error) {
+      if (error.response == undefined || error.response.data == undefined) {
+        return { api_status: false, detail: error + "" };
+      }
+      return error.response.data;
+    }
+  }
+
+  const revokeIsUser = () => {
+    user.value = {
+      user: "",
+      user_type: "",
+      nombres: "",
+      apellido_paterno: "",
+      apellido_materno: "",
+      ci: "",
+      ci_expedido: "",
+      numero_contacto: "",
+      email: "",
+      direccion: "",
+      picture: "",
+    }
+    user_loaded.value = false
+  }
+
+  return { user, isUser, revokeIsUser, updateUser }
+})
+
+export const usePermission = defineStore("usePermission", () => {
+  const user_permissions = ref([])
+  const permission_loaded = ref(false)
+
+  const userPermission = async () => {
+
+    if (permission_loaded.value) {
+      // si ya se cargo los permisos retornamos
+      return
+    }
+
+    try {
+      const resolve = await axiosSecure.post("auth/permission/");
+      permission_loaded.value = true
+      user_permissions.value = resolve.data.payload
+    } catch (error) {
+      if (error.response == undefined || error.response.data == undefined) {
+        toastError(error + "")
+      }
+      toastError(error.response.data.detail)
+    }
+  }
+
+  const hasPermission = (required_permisssions) => {
+    return required_permisssions.some(permiso => user_permissions.value.includes(permiso))
+  }
+
+  const revokePermission = () => {
+    permission_loaded.value = false
+    user_permissions.value = []
+  }
+
+  return { hasPermission, userPermission, revokePermission }
+})
+

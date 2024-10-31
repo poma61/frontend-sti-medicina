@@ -1,6 +1,5 @@
 <script setup>
 import app from '@/config/app';
-import { defineProps, defineEmits, onMounted } from 'vue';
 import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale' // Importar la configuración regional en español
 
@@ -62,8 +61,9 @@ const objs_permisos = props.p_list_permisos.filter(
                         <td class="font-weight-bold">C.I.:</td>
                         <td>
                             <v-chip color="cyan-darken-2" label>
-                                {{ props.p_item_personal_institucional.ci }} {{
-                                    props.p_item_personal_institucional.ci_expedido }}
+                                {{ props.p_item_personal_institucional.ci }}
+                                {{ props.p_item_personal_institucional.ci_complemento }}
+                                {{ props.p_item_personal_institucional.ci_expedido }}
                             </v-chip>
                         </td>
                     </tr>
@@ -110,7 +110,7 @@ const objs_permisos = props.p_list_permisos.filter(
                         <td>
                             <v-chip v-for="(permiso, idx) in objs_permisos " :key="idx" color="success" label
                                 class="ma-1">
-                                <v-icon icon="mdi-check" start/>
+                                <v-icon icon="mdi-check" start />
                                 {{ permiso.name }}
                             </v-chip>
                         </td>

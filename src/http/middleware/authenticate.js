@@ -1,7 +1,7 @@
-import { useAuth } from "@/stores/useAuth";
+import { useAuth } from "@/stores/useAuthenticateStore";
 
 // Nombre de la ruta de login
-const LOGIN = "n-login";
+const LOGIN = "n-login"
 
 const authenticate = (to, from, next) => {
   const need_auth = to.matched.some((record) => record.meta.requireAuth);
@@ -20,3 +20,4 @@ const authenticate = (to, from, next) => {
 }
 
 export default authenticate
+

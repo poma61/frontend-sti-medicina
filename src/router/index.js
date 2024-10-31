@@ -1,12 +1,10 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHistory } from "vue-router"
 
-import { middleware } from "@/http/middleware/middleware";
-import authTokenExpiration from "@/http/middleware/authTokenExpiration";
-import redirectIfAuthenticated from "@/http/middleware/redirectIfAuthenticated";
-import authenticate from "@/http/middleware/authenticate";
-
-
-// import checkRole from '@/http/middleware/checkRole';
+import { middleware } from "@/http/middleware/middleware"
+import authTokenExpiration from "@/http/middleware/authTokenExpiration"
+import redirectIfAuthenticated from "@/http/middleware/redirectIfAuthenticated"
+import authenticate from "@/http/middleware/authenticate"
+import hasPermission from '@/http/middleware/hasPermission'
 
 //views
 import LoginView from "@/views/auth/LoginView.vue"
@@ -14,7 +12,6 @@ import LoginView from "@/views/auth/LoginView.vue"
 /**
  * El orden de los middleware afecta se debe verificar primero si el token expiro
  */
-
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -25,7 +22,9 @@ const router = createRouter({
       meta: {
         requireAuth: false,
       },
-      beforeEnter: [middleware(redirectIfAuthenticated)],
+      beforeEnter: [
+        middleware(redirectIfAuthenticated)
+      ],
     },
     {
       path: "/perfil",
@@ -35,7 +34,7 @@ const router = createRouter({
         requireAuth: true,
       },
       beforeEnter: [
-        middleware(authTokenExpiration), // primero verifica si el token expiro
+        middleware(authTokenExpiration), 
         middleware(authenticate),
       ],
     },
@@ -46,7 +45,19 @@ const router = createRouter({
         requireAuth: true,
       },
       beforeEnter: [
-        middleware(authTokenExpiration), 
+        middleware(authTokenExpiration),
+        middleware(authenticate),
+      ],
+    },
+    {
+      path: "/access-denied",
+      name: "n-access-denied",
+      component: () => import(/* webpackChunkName "AccessDeniedView.vue"*/ "@/views/common/AccessDeniedView.vue"),
+      meta: {
+        requireAuth: true,
+      },
+      beforeEnter: [
+        middleware(authTokenExpiration),
         middleware(authenticate),
       ],
     },
@@ -62,30 +73,6 @@ const router = createRouter({
         middleware(authTokenExpiration),
         middleware(authenticate),
       ],
-    },
-    {
-      path: "/estudiante",
-      name: "n-estudiante",
-      component: () => import(/* webpackChunkName "EstudianteView"*/ "@/views/estudiante/EstudianteView.vue"),
-      meta: {
-        requireAuth: true,
-      },
-      beforeEnter: [
-        middleware(authTokenExpiration),
-        middleware(authenticate)
-      ]
-    },
-    {
-      path: "/personal-institucional",
-      name: "n-personal-institucional",
-      component: () => import(/* webpackChunkName "PersonalInstitucionalView"*/ "@/views/personal_institucional/PersonalInstitucionalView.vue"),
-      meta: {
-        requireAuth: true,
-      },
-      beforeEnter: [
-        middleware(authTokenExpiration),
-        middleware(authenticate),
-      ]
     },
 
     {
@@ -103,7 +90,7 @@ const router = createRouter({
     {
       path: "/area-internado-rotatorio/medicina-interna",
       name: "n-ir-medicina-interna",
-      component: () => import(/* webpackChunkName "MedicinaInternaView"*/ "@/views/areas_intenado_rotatorio/MedicinaInternaView.vue"),
+      component: () => import(/* webpackChunkName "MedicinaInternaView"*/ "@/views/internado_rotatorio/MedicinaInternaView.vue"),
       meta: {
         requireAuth: true,
       },
@@ -115,7 +102,7 @@ const router = createRouter({
     {
       path: "/area-internado-rotatorio/cirurgia",
       name: "n-ir-cirurgia",
-      component: () => import(/* webpackChunkName "CirurgiaView"*/ "@/views/areas_intenado_rotatorio/CirurgiaView.vue"),
+      component: () => import(/* webpackChunkName "CirurgiaView"*/ "@/views/internado_rotatorio/CirurgiaView.vue"),
       meta: {
         requireAuth: true,
       },
@@ -127,7 +114,7 @@ const router = createRouter({
     {
       path: "/area-internado-rotatorio/pediatria",
       name: "n-ir-pediatria",
-      component: () => import(/* webpackChunkName "PediatriaView"*/ "@/views/areas_intenado_rotatorio/PediatriaView.vue"),
+      component: () => import(/* webpackChunkName "PediatriaView"*/ "@/views/internado_rotatorio/PediatriaView.vue"),
       meta: {
         requireAuth: true,
       },
@@ -139,7 +126,7 @@ const router = createRouter({
     {
       path: "/area-internado-rotatorio/ginecologia-obstetricia",
       name: "n-ir-ginecologia-obstetricia",
-      component: () => import(/* webpackChunkName "GinecologiaObstetriciaView"*/ "@/views/areas_intenado_rotatorio/GinecologiaObstetriciaView.vue"),
+      component: () => import(/* webpackChunkName "GinecologiaObstetriciaView"*/ "@/views/internado_rotatorio/GinecologiaObstetriciaView.vue"),
       meta: {
         requireAuth: true,
       },
@@ -151,7 +138,7 @@ const router = createRouter({
     {
       path: "/area-internado-rotatorio/salud-publica",
       name: "n-ir-salud-publica",
-      component: () => import(/* webpackChunkName "SaludPublicaView"*/ "@/views/areas_intenado_rotatorio/SaludPublicaView.vue"),
+      component: () => import(/* webpackChunkName "SaludPublicaView"*/ "@/views/internado_rotatorio/SaludPublicaView.vue"),
       meta: {
         requireAuth: true,
       },
@@ -163,7 +150,7 @@ const router = createRouter({
     {
       path: "/area-internado-rotatorio/:area/:uuid",
       name: "n-view-tema",
-      component: () => import(/* webpackChunkName "TemaView"*/ "@/views/areas_intenado_rotatorio/TemaView.vue"),
+      component: () => import(/* webpackChunkName "TemaView"*/ "@/views/internado_rotatorio/TemaView.vue"),
       meta: {
         requireAuth: true,
       },
@@ -172,6 +159,49 @@ const router = createRouter({
         middleware(authenticate),
       ]
     },
+
+    {
+      path: "/progreso-estudio",
+      name: "n-progreso-estudio",
+      component: () => import(/* webpackChunkName "TemaView"*/ "@/views/internado_rotatorio/ProgresoEstudio.vue"),
+      meta: {
+        requireAuth: true,
+      },
+      beforeEnter: [
+        middleware(authTokenExpiration),
+        middleware(authenticate),
+      ]
+    },
+
+
+    //***************** administrativo
+    {
+      path: "/estudiante",
+      name: "n-estudiante",
+      component: () => import(/* webpackChunkName "EstudianteView"*/ "@/views/estudiante/EstudianteView.vue"),
+      meta: {
+        requireAuth: true,
+      },
+      beforeEnter: [
+        middleware(authTokenExpiration),
+        middleware(authenticate),
+        middleware(hasPermission,["data_view_students"]),
+      ]
+    },
+    {
+      path: "/personal-institucional",
+      name: "n-personal-institucional",
+      component: () => import(/* webpackChunkName "PersonalInstitucionalView"*/ "@/views/personal_institucional/PersonalInstitucionalView.vue"),
+      meta: {
+        requireAuth: true,
+      },
+      beforeEnter: [
+        middleware(authTokenExpiration),
+        middleware(authenticate),
+        middleware(hasPermission, ["data_view_institutional_staff"]),
+      ]
+    },
+
 
   ], //routes
 });

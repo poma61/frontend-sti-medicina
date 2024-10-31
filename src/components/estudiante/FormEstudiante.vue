@@ -1,5 +1,5 @@
 <script setup>
-import { ref, defineProps, defineEmits, watch, computed, nextTick, onMounted } from 'vue';
+import { ref, watch, computed, nextTick, onMounted } from 'vue';
 import Estudiante from '@/http/api/Estudiante';
 import { toastError, toastSuccess } from '@/composables/toastify';
 import app from '@/config/app';
@@ -13,7 +13,7 @@ const props = defineProps(["p_item_estudiante"])
 const emit = defineEmits(["toItemRefreshDataTable", "toNewForm"])
 
 //data
-const item_estudiante = ref(props.p_item_estudiante);
+const item_estudiante = ref({ ...props.p_item_estudiante });
 const show_password = ref(false)
 const src_image = ref(null);
 const loading_btn = ref(false);
@@ -28,7 +28,7 @@ const fecha_nacimiento_date_input = ref(null)
 // debemos actualizar item_estudiante
 // esto pasa porque se ejecuta el emit toNewForm del componente padre
 watch(() => props.p_item_estudiante, () => {
-    item_estudiante.value = props.p_item_estudiante
+    item_estudiante.value = { ...props.p_item_estudiante }
     clear()
 })
 
@@ -64,7 +64,7 @@ const save = () => {
     loading_btn.value = true
     // eliminamos picture si es de tipo string
     //significa que no se subio ninguna imagen
-    if (typeof item_estudiante.value.usuario.picture === 'string' || item_estudiante.value.usuario.picture === null) {
+    if (typeof item_estudiante.value.usuario.picture === 'string') {
         delete item_estudiante.value.usuario.picture
     }
 
@@ -215,7 +215,7 @@ onMounted(() => {
                 <v-divider class="mb-5" opacity="0.3"></v-divider>
                 <v-row>
                     <v-col cols="12" sm="4">
-                        <v-text-field v-model="item_estudiante.usuario.user" label="Usuario (*)"
+                        <v-text-field v-model="item_estudiante.usuario.user" label="Usuario (*)" autocomplete="off"
                             color="indigo-lighten-1" clearable :error-messages="showSerializerErrors('usuario.user')"
                             @input="filterSpecialChars" />
                     </v-col>
@@ -276,8 +276,8 @@ onMounted(() => {
 
                     <v-col cols="12" sm="4">
                         <v-date-input clearable v-model:model-value="fecha_nacimiento_date_input"
-                            label="Fecha de nacimiento (*)" color="indigo-lighten-1"
-                            :error-messages="showSerializerErrors('fecha_nacimiento')"
+                            label="Fecha de nacimiento (*)" color="indigo-lighten-1" prepend-icon=""
+                            prepend-inner-icon="mdi-calendar" :error-messages="showSerializerErrors('fecha_nacimiento')"
                             @update:model-value="formattedDate($event)">
                         </v-date-input>
 
@@ -308,12 +308,18 @@ onMounted(() => {
 
                 <v-row>
                     <v-col cols="12" sm="4">
-                        <v-text-field v-model="item_estudiante.ci" label="C.I. (*)" color="indigo-lighten-1" clearable
-                            :error-messages="showSerializerErrors('ci')" />
+                        <v-number-input v-model="item_estudiante.ci" label="C.I. (*)" color="indigo-lighten-1" clearable
+                            :model-value="Number(item_estudiante.ci)" :error-messages="showSerializerErrors('ci')" />
                     </v-col>
 
                     <v-col cols="12" sm="4">
-                        <v-autocomplete v-model="item_estudiante.ci_expedido" label="Expedido (*)"
+                        <v-text-field v-model="item_estudiante.ci_complemento" label="Complemento"
+                            color="indigo-lighten-1" clearable
+                            :error-messages="showSerializerErrors('ci_complemento')" />
+                    </v-col>
+
+                    <v-col cols="12" sm="4">
+                        <v-autocomplete v-model="item_estudiante.ci_expedido" label="Expedido en (*)"
                             :items="['SC', 'CH', 'CB', 'PT', 'BN', 'LP', 'PA', 'TJ', 'OR', 'SinExp']"
                             color="indigo-lighten-1" clearable
                             :error-messages="showSerializerErrors('ci_expedido')"></v-autocomplete>

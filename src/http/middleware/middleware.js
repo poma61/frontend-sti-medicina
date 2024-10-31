@@ -6,4 +6,5 @@
 //y finalmente, llama a la función middleware original (withParams), pasándole los parámetros originales junto
 // con los parámetros adicionales utilizando el operador de propagación (...params).
 
-export const middleware = (withParams, ...params) => (to, from ,next) =>withParams(to, from ,next, ...params)
+// export const middleware = (withParams, ...params) => (to, from ,next) =>withParams(to, from ,next, ...params)
+export const middleware = (withParams, ...params) => (to, from, next) => withParams(to, from, next, ...params)

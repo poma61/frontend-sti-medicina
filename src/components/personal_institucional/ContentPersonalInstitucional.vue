@@ -29,7 +29,7 @@ const columns = ref([
     { title: 'Nombres', key: 'nombres', },
     { title: 'Apellido paterno', key: 'apellido_paterno', },
     { title: 'Apellido materno', key: 'apellido_materno', },
-    { title: 'CI', key: 'ci__', value: (item) => `${item.ci} ${item.ci_expedido}`, },
+    { title: 'Numero de contacto', key: 'numero_contacto' },
     { title: 'Correo electronico', key: 'usuario.email' },
     { title: 'Activo', key: 'usuario.is_active', align: 'center' },
     { title: 'Acciones', key: 'actions', align: 'center' },
@@ -91,6 +91,7 @@ const closeItemDetails = () => {
 const openDeleteItem = (item) => {
     clear()
     item_personal_institucional.value = { ...item }
+    index_item.value = data.value.indexOf(item)
     dialog_delete.value = true
 }
 

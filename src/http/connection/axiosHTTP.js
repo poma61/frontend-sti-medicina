@@ -1,6 +1,6 @@
 import axios from "axios";
 import app from "@/config/app";
-import { useAuth } from "@/stores/useAuth";
+import { useAuth } from "@/stores/useAuthenticateStore";
 
 const axiosSecure = axios.create({
   baseURL: app.BASE_URL + app.PREFIX_URL,

@@ -1,5 +1,5 @@
-import { useAuth } from "@/stores/useAuth";
-const HOME = "n-home";
+import { useAuth } from "@/stores/useAuthenticateStore"
+const HOME = "n-home"
 
 const redirectIfAuthenticated = (to, from, next) => {
   
@@ -9,8 +9,8 @@ const redirectIfAuthenticated = (to, from, next) => {
   } else {
     // El usuario esta en la ruta "/", y NO esta autenticado dejar cargar la pagina login
     // si no colocamos next() no dejara cargar la ruta "/", y la pagina estara en blanco
-    next();
+    next()
   }
-};
+}
 
 export default redirectIfAuthenticated;

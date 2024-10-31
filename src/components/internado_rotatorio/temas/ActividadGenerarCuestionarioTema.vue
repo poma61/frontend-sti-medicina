@@ -3,7 +3,7 @@ import { ref, onMounted, nextTick, onBeforeUnmount } from 'vue';
 import ActividadTema from '@/http/api/ActividadTema';
 import { toastError } from '@/composables/toastify';
 import Tema from '@/http/api/Tema';
-import ActividadEvaluarCuestionarioTema from "@/components/areas_internado_rotatorio/temas/ActividadEvaluarCuestionarioTema.vue"
+import ActividadEvaluarCuestionarioTema from "@/components/internado_rotatorio/temas/ActividadEvaluarCuestionarioTema.vue"
 
 // Estado para almacenar las preguntas y respuestas
 const all_questions = ref([]);

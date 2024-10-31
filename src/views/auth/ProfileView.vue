@@ -1,14 +1,12 @@
 <script setup>
 import BaseTemplate from '@/layouts/BaseTemplate.vue';
 import app from "@/config/app";
-import { useAuth } from "@/stores/useAuth";
-import { onMounted, ref, computed } from "vue";
+import { useUser } from "@/stores/useAuthenticateStore";
+import {  ref, computed } from "vue";
 import { toastError, toastSuccess } from "@/composables/toastify";
 
 //data
-const is_user = ref({});
-const loading_profile = ref(false);
-const loading_save = ref(false);
+const loading_save = ref(false)
 const update_auth_user_data = ref({
   email: "",
   user: "",
@@ -16,8 +14,9 @@ const update_auth_user_data = ref({
   new_password: "",
   confirm_new_password: "",
   picture: []
-});
-const form = ref(null);
+})
+const form = ref(null)
+const user_store = useUser()
 
 const serializer_errors_validate = ref({});
 const show_new_password = ref(false);
@@ -58,27 +57,11 @@ const filterSpaces = (event, field) => {
   }
 }
 
-const userAuthData = () => {
-  loading_profile.value = true;
-  setTimeout(async () => {
-    const auth = useAuth();
-    const response = await auth.userData();
-    loading_profile.value = false;
-    if (response.api_status) {
-      is_user.value = response.payload;
-      update_auth_user_data.value.user = response.payload.user;
-      update_auth_user_data.value.email = response.payload.email;
-    } else {
-      toastError(response.detail);
-    }
-  }, 200)
-}
-
 const updateAuthUser = () => {
   loading_save.value = true // deshabilitar los campos
   setTimeout(async () => {
-    const user = useAuth()
-    const response = await user.updateAuthUserData(Object.assign({}, update_auth_user_data.value))
+    const user = useUser()
+    const response = await user.updateUser(Object.assign({}, update_auth_user_data.value))
     loading_save.value = false //una vez procesado volvemos habilitar los campos
     if (response.api_status) {
       toastSuccess(response.detail)
@@ -146,26 +129,24 @@ const emailRules = [
   },
 ]
 
-onMounted(() => {
-  userAuthData()
-})
 </script>
 
 <template>
   <BaseTemplate>
     <v-card>
       <h1 class="text-h6 my-3 pa-1 bg-teal-accent-4 as-box-shadow">
-        <v-icon icon="mdi-account-eye"></v-icon>&nbsp;Perfil de usuario
+        <v-icon icon="mdi-account-eye" start></v-icon>
+        Perfil de usuario
       </h1>
       <v-card min-height="85vh" elevation="15">
-        <v-card-text class="as-flex-profile" v-if="loading_profile == false">
+        <v-card-text class="as-flex-profile">
           <v-table density="compact" class="as-item-profile">
             <tbody>
               <tr>
                 <td colspan="2">
                   <div class="text-center ma-2">
                     <v-avatar v-if="src_view_picture == null || src_view_picture == undefined"
-                      :image="app.BASE_URL + is_user.picture" size="200" />
+                      :image="app.BASE_URL + user_store.user.picture" size="200" />
                     <v-avatar v-else :image="src_view_picture" size="200" />
                   </div>
                 </td>
@@ -175,26 +156,26 @@ onMounted(() => {
               </tr>
               <tr>
                 <th>Nombres:</th>
-                <td>{{ is_user.nombres }}</td>
+                <td>{{ user_store.user.nombres }}</td>
               </tr>
 
               <tr>
                 <th>Apellido paterno:</th>
-                <td>{{ is_user.apellido_paterno }}</td>
+                <td>{{ user_store.user.apellido_paterno }}</td>
               </tr>
 
               <tr>
                 <th>Apellido materno:</th>
-                <td>{{ is_user.apellido_materno }}</td>
+                <td>{{ user_store.user.apellido_materno }}</td>
               </tr>
               <tr>
                 <th>CI.:</th>
-                <td>{{ is_user.ci }} {{ is_user.ci_expedido }}</td>
+                <td>{{ user_store.user.ci }} {{ user_store.user.ci_expedido }}</td>
               </tr>
               <tr>
                 <th>N° de contacto:</th>
-                <td v-if="is_user.numero_contacto != null">
-                  {{ is_user.numero_contacto }}
+                <td v-if="user_store.user.numero_contacto != null">
+                  {{ user_store.user.numero_contacto }}
                 </td>
                 <td v-else class="text-warning">Sin numero de contacto!</td>
               </tr>
@@ -256,12 +237,6 @@ onMounted(() => {
         </p>
       </v-card>
 
-      <v-overlay v-model="loading_profile" class="d-flex align-center justify-center" persistent contained>
-        <div class="text-center">
-          <v-progress-circular color="teal-accent-4" indeterminate size="100"></v-progress-circular>
-          <p class="text-h6 text-white">Obteniendo datos del usuario...</p>
-        </div>
-      </v-overlay>
     </v-card>
   </BaseTemplate>
 </template>

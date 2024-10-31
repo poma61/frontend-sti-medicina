@@ -1,5 +1,5 @@
 <script setup>
-import { ref, defineProps, defineEmits, watch, computed, nextTick, onMounted } from 'vue'
+import { ref, watch, computed, nextTick, onMounted } from 'vue'
 import PersonalInstitucional from '@/http/api/PersonalInstitucional'
 import { toastError, toastSuccess } from '@/composables/toastify'
 import app from '@/config/app'
@@ -342,8 +342,8 @@ onMounted(async () => {
 
                     <v-col cols="12" sm="4">
                         <v-date-input clearable v-model:model-value="fecha_nacimiento_date_input"
-                            label="Fecha de nacimiento (*)" color="indigo-lighten-1"
-                            :error-messages="showSerializerErrors('fecha_nacimiento')"
+                            label="Fecha de nacimiento (*)" color="indigo-lighten-1" prepend-icon=""
+                            prepend-inner-icon="mdi-calendar" :error-messages="showSerializerErrors('fecha_nacimiento')"
                             @update:model-value="formattedDate($event)">
                         </v-date-input>
 
@@ -373,12 +373,18 @@ onMounted(async () => {
 
                 <v-row>
                     <v-col cols="12" sm="4">
-                        <v-text-field v-model="item_personal_institucional.ci" label="C.I. (*)" color="indigo-lighten-1"
-                            clearable :error-messages="showSerializerErrors('ci')" />
+                        <v-number-input v-model="item_personal_institucional.ci" label="C.I. (*)"
+                            color="indigo-lighten-1" :model-value="Number(item_personal_institucional.ci)" clearable
+                            :error-messages="showSerializerErrors('ci')" />
+                    </v-col>
+                    <v-col cols="12" sm="4">
+                        <v-text-field v-model="item_personal_institucional.ci_complemento" label="Complemento"
+                            color="indigo-lighten-1" clearable
+                            :error-messages="showSerializerErrors('ci_complemento')" />
                     </v-col>
 
                     <v-col cols="12" sm="4">
-                        <v-autocomplete v-model="item_personal_institucional.ci_expedido" label="Expedido (*)"
+                        <v-autocomplete v-model="item_personal_institucional.ci_expedido" label="Expedido en (*)"
                             :items="['SC', 'CH', 'CB', 'PT', 'BN', 'LP', 'PA', 'TJ', 'OR', 'SinExp']"
                             color="indigo-lighten-1" clearable
                             :error-messages="showSerializerErrors('ci_expedido')"></v-autocomplete>
