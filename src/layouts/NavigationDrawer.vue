@@ -6,18 +6,17 @@ import { useRoute } from "vue-router"
 import app from "@/config/app"
 import logo from "@/assets/images/logo-medicina.png"
 
-const route = useRoute(); // Contiene informacion sobre la ruta actual
+const route = useRoute() // Contiene informacion sobre la ruta actual
 const open = ref(["Areas"])
 const use_permission = usePermission()
-const user_store = useUser();
+const user_store = useUser()
 
 //data
-const drawer = ref(true);
+const drawer = ref(true)
 //methods
 const byHiddenNavigationDrawer = () => {
   drawer.value = !drawer.value
 }
-
 </script>
 
 <template>
@@ -42,8 +41,7 @@ const byHiddenNavigationDrawer = () => {
       <v-divider class="border-opacity-25 my-2"></v-divider>
       <p class="text-subtitle-2 font-weight-bold">PANEL</p>
 
-      <v-list-item prepend-icon="mdi-view-dashboard" title="Inicio" value="Inicio" :to="{ name: 'n-home' }"
-        :class="{ 'v-list-item--active': route.name == 'n-home' }" />
+      <v-list-item prepend-icon="mdi-view-dashboard" title="Inicio" value="Inicio" :to="{ name: 'n-home' }" />
 
       <!-- Estudio, areas del internado rotatorio y bibloteca medica -->
       <v-divider class="border-opacity-25 my-2"></v-divider>
@@ -57,30 +55,29 @@ const byHiddenNavigationDrawer = () => {
           </template>
           <v-list-item prepend-icon="mdi-numeric-1-circle-outline" title="Medicina Interna" value="MedicinaInterna"
             :to="{ name: 'n-ir-medicina-interna' }"
-            :class="{ 'v-list-item--active': route.name == 'n-ir-medicina-interna' || route.params.area == 'medicina-interna' }" />
+            :class="{ 'v-list-item--active': route.params.area == 'medicina-interna' }" />
 
           <v-list-item prepend-icon="mdi-numeric-2-circle-outline" title="Cirurgía" value="Cirurgia"
-            :to="{ name: 'n-ir-cirurgia' }"
-            :class="{ 'v-list-item--active': route.name == 'n-ir-cirurgia' || route.params.area == 'cirurgia' }" />
+            :to="{ name: 'n-ir-cirurgia' }" :class="{ 'v-list-item--active': route.params.area == 'cirurgia' }" />
 
           <v-list-item prepend-icon="mdi-numeric-3-circle-outline" title="Pediatria" value="Pediatria"
-            :to="{ name: 'n-ir-pediatria' }"
-            :class="{ 'v-list-item--active': route.name == 'n-ir-pediatria' || route.params.area == 'pediatria' }" />
+            :to="{ name: 'n-ir-pediatria' }" :class="{ 'v-list-item--active': route.params.area == 'pediatria' }" />
 
           <v-list-item prepend-icon="mdi-numeric-4-circle-outline" title="Ginecologia Obs."
             value="GinecologiaObstetricia" :to="{ name: 'n-ir-ginecologia-obstetricia' }"
-            :class="{ 'v-list-item--active': route.name == 'n-ir-ginecologia-obstetricia' || route.params.area == 'ginecologia-obstetricia' }" />
+            :class="{ 'v-list-item--active': route.params.area == 'ginecologia-obstetricia' }" />
 
           <v-list-item prepend-icon="mdi-numeric-5-circle-outline" title="Salud Pública" value="SaludPublica"
             :to="{ name: 'n-ir-salud-publica' }"
-            :class="{ 'v-list-item--active': route.name == 'n-ir-salud-publica' || route.params.area == 'salud-publica' }" />
+            :class="{ 'v-list-item--active': route.params.area == 'salud-publica' }" />
 
         </v-list-group>
       </v-list>
 
+      <v-list-item prepend-icon="mdi-progress-clock" title="Pogreso de estudio" value="PogresoDeEstudio"
+        v-if="user_store.user.user_type == 'estudiante'" :to="{ name: 'n-progreso-estudio' }" />
 
-      <v-list-item prepend-icon="mdi-message-processing" title="TutorAI" value="TutorAI" :to="{ name: 'n-tutorai' }"
-        :class="{ 'v-list-item--active': route.name == 'n-tutorai' }" />
+      <v-list-item prepend-icon="mdi-message-processing" title="TutorAI" value="TutorAI" :to="{ name: 'n-tutorai' }" />
 
       <!-- parte administrativo -->
       <v-divider class="border-opacity-25 my-2"></v-divider>
@@ -89,13 +86,11 @@ const byHiddenNavigationDrawer = () => {
         ADMINISTRACION
       </p>
       <v-list-item v-if="use_permission.hasPermission(['data_view_students'])" prepend-icon="mdi-account-school"
-        title="Estudiantes" value="Estudiantes" :to="{ name: 'n-estudiante' }"
-        :class="{ 'v-list-item--active': route.name == 'n-estudiante' }" />
+        title="Estudiantes" value="Estudiantes" :to="{ name: 'n-estudiante' }" />
 
       <v-list-item v-if="use_permission.hasPermission(['data_view_institutional_staff'])"
         prepend-icon="mdi-home-city-outline" title="Institucional" value="Institucional"
-        :to="{ name: 'n-personal-institucional' }"
-        :class="{ 'v-list-item--active': route.name == 'n-personal-institucional' }" />
+        :to="{ name: 'n-personal-institucional' }" />
     </v-list>
 
   </v-navigation-drawer>

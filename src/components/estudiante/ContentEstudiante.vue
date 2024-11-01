@@ -178,7 +178,6 @@ onMounted(() => {
             <template v-slot:item.usuario.is_active="{ item }">
                 <v-chip color="success" v-if="item.usuario.is_active" prepend-icon="mdi-checkbox-marked-circle">
                     Habilitado </v-chip>
-
                 <v-chip color="red" v-else prepend-icon="mdi-cancel"> Deshabilitado </v-chip>
             </template>
 

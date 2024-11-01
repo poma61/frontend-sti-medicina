@@ -1,38 +1,46 @@
 <script setup>
-import { ref } from 'vue';
-import { useAuth } from '@/stores/useAuthenticateStore';
-import { useRouter } from 'vue-router';
-import { toastError } from '@/composables/toastify';
-import app from '@/config/app';
-import { useThemeStore } from '@/stores/useThemeStore';
+import { ref } from 'vue'
+import { useAuth } from '@/stores/useAuthenticateStore'
+import { useRouter } from 'vue-router'
+import { toastError } from '@/composables/toastify'
+import app from '@/config/app'
+import { useThemeStore } from '@/stores/useThemeStore'
+import { useTime } from 'vue-timer-hook'
 
 //data
-const loading_logout = ref(false);
-const emit = defineEmits(['byHiddenNavigationDrawerEmit']);
-const props = defineProps(['p_user']);
-const menu = ref(false);
-const dialog = ref(false);
-const router = useRouter();
+const loading_logout = ref(false)
+const emit = defineEmits(['byHiddenNavigationDrawerEmit'])
+const props = defineProps(['p_user'])
+const menu = ref(false)
+const dialog = ref(false)
+const router = useRouter()
 const theme_store = useThemeStore()
+const time = useTime()
 
 const authLogout = () => {
-    dialog.value = false;
-    loading_logout.value = true;
+    dialog.value = false
+    loading_logout.value = true
     setTimeout(async () => {
-        const use_auth = useAuth();
-        const response = await use_auth.logoutUser();
-        loading_logout.value = false;
+        const use_auth = useAuth()
+        const response = await use_auth.logoutUser()
+        loading_logout.value = false
 
-        if (response.api_status) {
-            router.push('/');
-        } else {
-            toastError(response.detail);
+        if (!response.api_status) {
+            toastError(response.detail)
         }
-    }, 200);
+        // Aunque la peticion dee error en store se cierra la sesion resetando valorews de useAuth
+        router.push('/')
+
+    }, 200)
 }
 
 const reloadPage = () => {
+    //recargar la pagina completa
     router.go(0)
+}
+
+const formatTime = (unit) => {
+    return unit.value.toString().padStart(2, '0')
 }
 </script>
 
@@ -40,11 +48,19 @@ const reloadPage = () => {
     <v-app-bar app color="cyan-darken-3" height="50" :elevation="10">
         <v-app-bar-nav-icon @click.stop="emit('byHiddenNavigationDrawerEmit')"></v-app-bar-nav-icon>
         <v-toolbar-title>
-            <v-chip>
-                <v-icon icon="mdi-account-check-outline" color="success"></v-icon>
+            <v-chip class="mx-1" label>
+                <v-icon icon="mdi-account-check-outline" color="deep-purple-darken-1"></v-icon>
             </v-chip>
+
         </v-toolbar-title>
+
         <v-spacer></v-spacer>
+
+        <v-chip label class="mx-1 text-body-1" color="">
+            <v-icon icon="mdi-clock" start></v-icon>
+            {{ formatTime(time.hours) }}:{{ formatTime(time.minutes) }}:{{ formatTime(time.seconds) }}
+        </v-chip>
+
         <v-btn :icon="theme_store.getThemeState() == 'dark' ? 'mdi-weather-night' : 'mdi-weather-sunny'"
             @click="theme_store.toggleTheme" />
 
@@ -69,14 +85,9 @@ const reloadPage = () => {
                 </v-list>
 
                 <v-list>
-                    <v-list-item link :to="{ name: 'n-perfil' }">
+                    <v-list-item :to="{ name: 'n-perfil' }">
                         <v-icon icon="mdi-account" color="success" start></v-icon>
                         <span>Perfil</span>
-                    </v-list-item>
-
-                    <v-list-item link v-if="props.p_user.user_type == 'estudiante'">
-                        <v-icon icon="mdi-progress-clock" color="info" start></v-icon>
-                        <span>Progreso de estudio</span>
                     </v-list-item>
 
                     <v-list-item @click="dialog = true">
@@ -100,10 +111,12 @@ const reloadPage = () => {
             </p>
             <div class="d-flex justify-center">
                 <v-btn color="red" variant="tonal" @click="dialog = false" class="ma-1">
-                    <v-icon icon="mdi-cancel"></v-icon>&nbsp;Cancelar
+                    <v-icon icon="mdi-cancel" start></v-icon>
+                    Cancelar
                 </v-btn>
                 <v-btn color="green-darken-1" variant="tonal" class="ma-1" @click="authLogout()">
-                    <v-icon icon="mdi-check-circle-outline"></v-icon>&nbsp;Si
+                    <v-icon icon="mdi-check-circle-outline" start></v-icon>
+                    Si
                 </v-btn>
             </div>
         </v-card>

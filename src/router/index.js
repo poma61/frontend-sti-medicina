@@ -163,7 +163,7 @@ const router = createRouter({
     {
       path: "/progreso-estudio",
       name: "n-progreso-estudio",
-      component: () => import(/* webpackChunkName "TemaView"*/ "@/views/internado_rotatorio/ProgresoEstudio.vue"),
+      component: () => import(/* webpackChunkName "ProgresoEstudioView"*/ "@/views/estudiante/ProgresoEstudioView.vue"),
       meta: {
         requireAuth: true,
       },

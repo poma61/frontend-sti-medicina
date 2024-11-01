@@ -1,49 +1,49 @@
 
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { VNoSsr } from 'vuetify/lib/components/index.mjs';
 
-export const useTimerStore = defineStore('timer', () => {
-    const seconds = ref(0);
+export const useTimerStore = defineStore('useTimerStore', () => {
     const is_running = ref(false);
-    let timer = null;
+    let timer = null
+    const hours = ref(0)
+    const minutes = ref(0)
+    const seconds = ref(0)
+    const date_now_seconds = ref(0)
 
     // Inicializar el tiempo desde localStorage
     const initializeTimer = () => {
-        const savedSeconds = localStorage.getItem('cronometro');
-        if (savedSeconds) {
-            seconds.value = parseInt(savedSeconds, 10);
+        const saved_seconds = localStorage.getItem('savedSeconds')
+        if (saved_seconds) {
+            date_now_seconds.value = parseInt(saved_seconds)
         }
     }
 
     const startTimer = () => {
+        initializeTimer()
         if (!is_running.value) {
-            is_running.value = true;
-            const startTime = Date.now() - seconds.value * 1000;
+            is_running.value = true
+            const start_time = Date.now() - date_now_seconds.value * 1000
 
             timer = setInterval(() => {
-                seconds.value = Math.floor((Date.now() - startTime) / 1000);
-                localStorage.setItem('cronometro', seconds.value);
+                date_now_seconds.value = Math.floor((Date.now() - start_time) / 1000)
+                localStorage.setItem('savedSeconds', date_now_seconds.value) 
             }, 1000);
         }
     }
 
     const stopTimer = () => {
         is_running.value = false
-        seconds.value = 0
         clearInterval(timer)
-        localStorage.removeItem('cronometro')
+        date_now_seconds.value = 0
+        localStorage.removeItem('savedSeconds')
     }
 
-    // Función para obtener el tiempo en formato HH:MM:SS
-    const formatTime = () => {
-        const hrs = String(Math.floor(seconds.value / 3600)).padStart(2, '0');
-        const mins = String(Math.floor((seconds.value % 3600) / 60)).padStart(2, '0');
-        const secs = String(seconds.value % 60).padStart(2, '0');
-        return `${hrs}:${mins}:${secs}`;
+    const toTimer = () => {
+        hours.value = String(Math.floor(date_now_seconds.value / 3600)).padStart(2, '0')
+        minutes.value = String(Math.floor((date_now_seconds.value % 3600) / 60)).padStart(2, '0')
+        seconds.value = String(date_now_seconds.value % 60).padStart(2, '0')
+        return `${hours.value}:${minutes.value}:${seconds.value}`
     }
 
-    initializeTimer()
-
-    return { seconds, is_running, startTimer, stopTimer, formatTime }
+    return { startTimer, stopTimer, toTimer }
 })

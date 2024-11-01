@@ -30,3 +30,5 @@ class Tema extends API {
 }
 
 export default Tema
+
+

@@ -162,6 +162,10 @@ class API {
         this._parameters = Object.assign(this._parameters, parameters);
     }
 
+    collectParameters() {
+        return this._parameters
+    }
+
     set endpoints(endpoints) {
         this._endpoints = endpoints
     }

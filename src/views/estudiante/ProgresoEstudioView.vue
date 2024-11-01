@@ -1,6 +1,6 @@
 <script setup>
 import BaseTemplate from '@/layouts/BaseTemplate.vue';
-
+import ContentProgresoEstudio from '@/components/estudiante/ContentProgresoEstudio.vue';
 </script>
 <template>
     <BaseTemplate>
@@ -8,7 +8,6 @@ import BaseTemplate from '@/layouts/BaseTemplate.vue';
             <v-icon icon="mdi-progress-clock" start></v-icon>
             Progreso de Estudio
         </h1>
-
+        <ContentProgresoEstudio />
     </BaseTemplate>
 </template>
-

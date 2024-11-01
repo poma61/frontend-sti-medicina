@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, nextTick, watch, onBeforeUnmount, } from 'vue'
 import DOMPurify from 'dompurify'
-import { completeLoadingToast, showLoadingToast, toastError } from '@/composables/toastify'
+import { completeLoadingToast, showLoadingToast, toastError, toastInfo, toastSuccess } from '@/composables/toastify'
 import TypingIndicator from '@/components/tutor_ai/TypingIndicator.vue'
 import TutorAI from '@/http/api/TutorAI'
 import HelpDialog from '@/components/tutor_ai/HelpDialog.vue'
@@ -23,13 +23,14 @@ const audio = ref(null)
 const generate_audio_status = ref(true)
 const dialog_help = ref(false)
 const loading_audio = ref(null)
-const max_words = ref(100)
+const max_words = ref(800)
 const word_count_message = ref('')
 const word_count = ref(0)
+const is_unmounted = ref(false)
 
 const newChat = () => {
     messages.value = []
-    // si hay una peticion request en proceso
+    // si hay una peticion request de audio en proceso detenemos
     if (abort_text_to_speeah_request.value != null) {
         abort_text_to_speeah_request.value.abort()
     }
@@ -49,12 +50,17 @@ const closeHelpDialog = () => {
     dialog_help.value = false
 }
 
-const generateAudioStatus = () => {
 
+const generateAudioStatus = () => {
     //cambiamos estado de la habilitacion del audio
     generate_audio_status.value = !generate_audio_status.value
+    if (generate_audio_status.value && !is_unmounted.value) {
+        toastInfo("Audio activado")
+    } else if (!generate_audio_status.value && !is_unmounted.value) {
+        toastInfo("Audio desactivado")
+    }
 
-    // si hay una peticion request en proceso
+    // si hay una peticion request de audio en proceso detenemos
     if (abort_text_to_speeah_request.value != null) {
         abort_text_to_speeah_request.value.abort()
     }
@@ -241,6 +247,9 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+    //indica que el componenete se esta desmontando
+    // de esta manera no mostramos ningun toast
+    is_unmounted.value = true
     generateAudioStatus()
     // si tutor ai esta respondiendo detenemos
     if (abort_tutor_ai_request.value != null) {
@@ -255,19 +264,19 @@ onBeforeUnmount(() => {
         <v-tooltip text="Audio TutorAI">
             <template v-slot:activator="{ props }">
                 <v-btn v-bind="props" :icon="generate_audio_status ? 'mdi-volume-high' : 'mdi-volume-off'"
-                    color="cyan-darken-1" @click="generateAudioStatus" />
+                    color="indigo-darken-1" @click="generateAudioStatus" />
             </template>
         </v-tooltip>
 
         <v-tooltip text="Ayuda TutorAI">
             <template v-slot:activator="{ props }">
-                <v-btn v-bind="props" icon="mdi-help" color="cyan-darken-1" @click="dialog_help = true" />
+                <v-btn v-bind="props" icon="mdi-help" color="indigo-darken-1" @click="dialog_help = true" />
             </template>
         </v-tooltip>
 
         <v-tooltip text="Nuevo mensaje">
             <template v-slot:activator="{ props }">
-                <v-btn v-bind="props" icon="mdi-plus" color="cyan-darken-1" @click="newChat" />
+                <v-btn v-bind="props" icon="mdi-plus" color="indigo-darken-1" @click="newChat" />
             </template>
         </v-tooltip>
     </div>
