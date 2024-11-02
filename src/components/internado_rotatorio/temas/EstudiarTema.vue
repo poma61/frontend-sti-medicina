@@ -21,7 +21,6 @@ const view_controls = ref(false)
 const interval_id_register = ref(null)
 
 const registerProgresoEstudio = async () => {
-
     const data_progreso_estudio = {
         tema: props.p_item_tema.id,
         tiempo_est: props.p_time,
@@ -33,11 +32,6 @@ const registerProgresoEstudio = async () => {
     if (!response.api_status) {
         toastError(response.detail)
     }
-}
-
-const timeToSeconds = (time) => {
-    const [hours, minutes, seconds] = time.split(':').map(Number);
-    return hours * 3600 + minutes * 60 + seconds;
 }
 
 
@@ -100,13 +94,15 @@ const handlePdfInit = (pdf) => {
 }
 
 onBeforeMount(() => {
-    // Ejecutamos la función cada minuto (60000 ms)
-    interval_id_register.value = setInterval(registerProgresoEstudio, 60000)
+    // Ejecutamos la función cada 5 minutos (300000 ms) (1 min = 60000 ms)
+    interval_id_register.value = setInterval(registerProgresoEstudio, 300000)
 })
 
 onBeforeUnmount(() => {
     // Limpiamos el intervalo cuando el antes que el componente se desmonte 
-    if (interval_id_register.value) clearInterval(interval_id_register.value)
+    if (interval_id_register.value) {
+        clearInterval(interval_id_register.value)
+    }
 
 })
 

@@ -305,7 +305,8 @@ onBeforeUnmount(() => {
                 rows="2" color="cyan-darken-1" ref="textareaRef" @keyup.enter="handleEnterKey" auto-grow :max-rows="6"
                 variant="outlined" class="text-center"
                 :messages="'TutorAI puede cometer errores. Considere verificar la informacion proporcionada.'"
-                @input="checkWordCount" :error-messages="word_count_message">
+                @input="checkWordCount" :error-messages="word_count_message"
+                :maxlength="max_words" counter>
             </v-textarea>
             <v-btn class="ma-1" color="cyan-darken-1" icon="mdi-send" @click="sendMessage"
                 :disabled="loading || !user_message" :loading="loading" />

@@ -1,44 +1,60 @@
 <script setup>
-import { ref, onMounted, nextTick, onBeforeUnmount } from 'vue';
-import ActividadTema from '@/http/api/ActividadTema';
+import { ref, nextTick, onBeforeUnmount, onBeforeMount } from 'vue';
+import CuestionarioIsTemaOfAI from '@/http/api/CuestionarioIsTemaOfAI';
 import { toastError } from '@/composables/toastify';
 import Tema from '@/http/api/Tema';
 import ActividadEvaluarCuestionarioTema from "@/components/internado_rotatorio/temas/ActividadEvaluarCuestionarioTema.vue"
+import ProgresoEstudio from '@/http/api/ProgresoEstudio';
 
 // Estado para almacenar las preguntas y respuestas
-const all_questions = ref([]);
+const questionary = ref([]);
 const disable_text_field = ref(false);
 const loading_overlay = ref(false);
 const question = ref({})
-const props = defineProps(['p_item_tema'])
+const props = defineProps(['p_item_tema', 'p_time'])
 const component = ref({
     generar_cuestionario: true,
     evaluar_cuestionario: false,
 })
 const abort_evaluate_question_request = ref(null)
+const interval_id_register = ref(null)
+
+const registerProgresoEstudio = async () => {
+    const data_progreso_estudio = {
+        tema: props.p_item_tema.id,
+        tiempo_est: props.p_time,
+    }
+    const progreso_estudio = new ProgresoEstudio({ ...data_progreso_estudio })
+    const response = await progreso_estudio.createOrUpdate()
+
+    if (!response.api_status) {
+        toastError(response.detail)
+    }
+}
+
 
 const isGenerateQuestionsAI = async () => {
     try {
-        all_questions.value = [] // Reiniciar preguntas
+        questionary.value = []
         disable_text_field.value = true
         loading_overlay.value = true
         let fragment
-      
+
         let result = ""
         let purge_pregunta
 
-        const actividad_tema = new ActividadTema()
-        const tema = new Tema({ ...props.p_item_tema })  // debemos enviar datos de un tema para que la ia genere preguntas
-
+        const actividad_tema = new CuestionarioIsTemaOfAI()
+        // debemos enviar datos de un tema para que la ia genere preguntas
+        const tema = new Tema({ ...props.p_item_tema })
         abort_evaluate_question_request.value = new AbortController()
 
         const { reader, decoder } = await actividad_tema.generateQuestionsAI(tema, abort_evaluate_question_request.value.signal);
-        // si ya recibimos el stream desabilitamos el overlay
+
         loading_overlay.value = false
 
         //iniciamos para la primera pregunta
         question.value = { pregunta: '', respuesta: '' }
-        all_questions.value.push(question.value)
+        questionary.value.push(question.value)
 
         let v = true
         while (v) {
@@ -46,11 +62,11 @@ const isGenerateQuestionsAI = async () => {
             if (done) {
                 break;
             }
-            // Decodificar el fragmento
+
             fragment = decoder.decode(chunk, { stream: true })
             result += fragment
             question.value.pregunta = result
-            //result.includes('\n') => indica que finalizo la pregunta
+
             if (result.includes('\n')) {
                 //antes de reiniciar pregunta.value eliminamos el  \n
                 purge_pregunta = question.value.pregunta
@@ -58,14 +74,14 @@ const isGenerateQuestionsAI = async () => {
                 //reiniciar result para la otra pregunta y apregar un objeto question para otra pregunta
                 result = ""
                 question.value = { pregunta: '', respuesta: '' }
-                all_questions.value.push(question.value)
+                questionary.value.push(question.value)
             }
             nextTick(() => {
                 scrollToBottom()
             })
         }
-        abort_evaluate_question_request.value = null // reiniciar
-        // solo habilitamos se cuando se  genero el cuestionario
+        abort_evaluate_question_request.value = null
+        // solo habilitamos los campos de respuesta cuando se  genero el cuestionario
         disable_text_field.value = false
 
     } catch (error) {
@@ -75,13 +91,17 @@ const isGenerateQuestionsAI = async () => {
         }
 
         loading_overlay.value = false
-        abort_evaluate_question_request.value = null // reiniciar
+        abort_evaluate_question_request.value = null
     }
 }
 
 const evaluateAllQuestions = () => {
     component.value.generar_cuestionario = false
     component.value.evaluar_cuestionario = true
+    // Limpiamos el intervalo cuando mandamos evaluar cuestionario
+    if (interval_id_register.value) {
+        clearInterval(interval_id_register.value)
+    }
 }
 
 const filterSpecialChars = (event, index) => {
@@ -89,28 +109,33 @@ const filterSpecialChars = (event, index) => {
     const regex = /[^a-zA-Z0-9. -]/g
     const value = event.target.value
     const filtered_value = value.replace(regex, "")
-    all_questions.value[index].respuesta = filtered_value
+    questionary.value[index].respuesta = filtered_value
 }
 
 const scrollToBottom = () => {
-    // Desplazarse suavemente al final de la página
     window.scrollTo({
         top: document.body.scrollHeight,
         behavior: 'smooth'
     })
 }
 
-onMounted(() => {
-    isGenerateQuestionsAI()
+onBeforeMount(async () => {
+    // Ejecutamos la función cada 3 minutos (180000 ms) (1 min = 60000 ms)
+    interval_id_register.value = setInterval(registerProgresoEstudio, 180000)
+    await isGenerateQuestionsAI()
+
 })
 onBeforeUnmount(() => {
     // detenemos la evaluacion del cuestionario por AI
     if (abort_evaluate_question_request.value != null) {
         abort_evaluate_question_request.value.abort()
     }
+    // Limpiamos el intervalo cuando el antes que el componente se desmonte 
+    if (interval_id_register.value) {
+        clearInterval(interval_id_register.value)
+    }
 })
 </script>
-
 
 <template>
     <!-- generar cuestionario -->
@@ -126,10 +151,10 @@ onBeforeUnmount(() => {
             <p class="mb-5 text-body-2 text-disabled">
                 TutorAI puede cometer errores. Considere verificar las preguntas generadas.
             </p>
-            <div v-for="(item, index) in all_questions" :key="index">
+            <div v-for="(item, index) in questionary" :key="index">
                 <p class="text-body-1 no-selected">{{ item.pregunta }}</p>
                 <v-text-field v-model="item.respuesta" placeholder="Escribe tu respuesta..." clearable
-                    :disabled="disable_text_field" color="indigo-lighten-1"
+                    :disabled="disable_text_field" color="indigo-lighten-1" maxlength="200" counter
                     @input="filterSpecialChars($event, index)" />
             </div>
         </v-card-text>
@@ -153,7 +178,7 @@ onBeforeUnmount(() => {
     </v-card>
 
     <!-- Evaluar cuestionario -->
-    <ActividadEvaluarCuestionarioTema v-else :p_all_questions="all_questions" :p_item_tema="props.p_item_tema" />
+    <ActividadEvaluarCuestionarioTema v-else :p_questionary="questionary" v-bind="props" />
 
 </template>
 

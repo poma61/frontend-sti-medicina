@@ -1,31 +1,54 @@
 <script setup>
-import { ref, onMounted, nextTick, onBeforeUnmount } from 'vue';
-import ActividadTema from '@/http/api/ActividadTema';
-import { completeLoadingToast, showLoadingToast, toastError } from '@/composables/toastify';
+import { ref, nextTick, onBeforeUnmount, onBeforeMount } from 'vue';
+import CuestionarioIsTemaOfAI from '@/http/api/CuestionarioIsTemaOfAI';
+import { completeLoadingToast, showLoadingToast, toastError, toastInfo } from '@/composables/toastify';
 import Tema from '@/http/api/Tema';
 import DOMPurify from 'dompurify';
 import TutorAI from '@/http/api/TutorAI';
+import ProgresoEstudio from '@/http/api/ProgresoEstudio';
 
 const loading_overlay = ref(false);
-const props = defineProps(['p_all_questions', 'p_item_tema'])
-const result = ref("")
+const props = defineProps(['p_questionary', 'p_item_tema', 'p_time'])
+const evaluation_of_ai = ref("")
 const generate_audio_status = ref(true)
 const abort_text_to_speeah_request = ref(null)
 const audio = ref(null)
 const abort_evaluate_question_request = ref(null)
 const loading_audio = ref(null)
+const is_unmounted = ref(false)
+
+const completeProgresoEstudio = async () => {
+    const data_progreso_estudio = {
+        tema: props.p_item_tema.id,
+        tiempo_est: props.p_time,
+    }
+    const data_parameters = {
+        finished_tema_and_question: true,
+        questionary: props.p_questionary,
+        evaluation_of_ai: evaluation_of_ai.value,
+    }
+
+    const progreso_estudio = new ProgresoEstudio(data_progreso_estudio)
+
+    progreso_estudio.loadParameters(data_parameters)
+    const response = await progreso_estudio.createOrUpdate()
+
+    if (!response.api_status) {
+        toastError(response.detail)
+    }
+}
 
 const isEvaluateQuestionsAI = async () => {
     try {
         loading_overlay.value = true
         let fragment
         let v = true
-        const actividad_tema = new ActividadTema()
+        const actividad_tema = new CuestionarioIsTemaOfAI()
         const tema = new Tema({ ...props.p_item_tema })
 
         abort_evaluate_question_request.value = new AbortController()
 
-        const { reader, decoder } = await actividad_tema.evaluateQuestionsAI(props.p_all_questions, tema, abort_evaluate_question_request.value.signal);
+        const { reader, decoder } = await actividad_tema.evaluateQuestionsAI(props.p_questionary, tema, abort_evaluate_question_request.value.signal);
         // si ya recibimos el stream desabilitamos el overlay
         loading_overlay.value = false
 
@@ -36,15 +59,18 @@ const isEvaluateQuestionsAI = async () => {
             }
             // Decodificar el fragmento
             fragment = decoder.decode(chunk, { stream: true })
-            result.value += fragment
+            evaluation_of_ai.value += fragment
 
             nextTick(() => {
                 scrollToBottom()
             })
         }
+        // Una vez generado texto actualizamos progreso de esutudio
+        await completeProgresoEstudio()
+
         abort_evaluate_question_request.value = null
         // eliminamos * para evitar que el audio no genere  el caracter *
-        const text = result.value.replace(/\*/g, '')
+        const text = evaluation_of_ai.value.replace(/\*/g, '')
         await sendTextToSpeech(text)
 
     } catch (error) {
@@ -61,6 +87,12 @@ const generateAudioStatus = () => {
 
     //cambiamos estado de la habilitacion del audio
     generate_audio_status.value = !generate_audio_status.value
+    if (generate_audio_status.value && !is_unmounted.value) {
+        toastInfo("Audio activado")
+    } else if (!generate_audio_status.value && !is_unmounted.value) {
+        toastInfo("Audio desactivado")
+    }
+
 
     // si hay una peticion request en proceso lo detenemos
     if (abort_text_to_speeah_request.value != null) {
@@ -88,6 +120,7 @@ const sendTextToSpeech = async (text) => {
         audio.value = await tutor_ai.textToSpeech(text, abort_text_to_speeah_request.value.signal)
         completeLoadingToast(loading_audio.value)
 
+
         audio.value.oncanplaythrough = () => {
             audio.value.play()
         }
@@ -99,7 +132,7 @@ const sendTextToSpeech = async (text) => {
     } catch (error) {
         if (loading_audio.value != null) {
             // detenemos el toast de generacion de audio
-            completeLoadingToast(loading_audio.value) 
+            completeLoadingToast(loading_audio.value)
         }
 
         // solo mostramos errores que NO sean BodyStreamBuffer y  AbortError
@@ -127,17 +160,20 @@ const formatTextINHtml = (content) => {
     return DOMPurify.sanitize(formattedContent);
 }
 
-onMounted(() => {
-    isEvaluateQuestionsAI()
+onBeforeMount(async () => {
+    await isEvaluateQuestionsAI()
 })
 
 onBeforeUnmount(() => {
-    // detenemos generacion de audio y si hay una solicitud en curso tambien detenemos
+    //indica que el componenete se esta desmontando
+    // de esta manera no mostramos ningun toast
+    is_unmounted.value = true
     generateAudioStatus()
     // detenemos la evaluacion del cuestionario por AI
     if (abort_evaluate_question_request.value != null) {
         abort_evaluate_question_request.value.abort()
     }
+
 })
 </script>
 
@@ -161,7 +197,7 @@ onBeforeUnmount(() => {
             <p class="mb-5 text-body-2 text-disabled">
                 TutorAI puede cometer errores. Considere verificar la evaluacion del cuestionario.
             </p>
-            <p v-html="formatTextINHtml(result)" class="text-body-1 no-selected"></p>
+            <p v-html="formatTextINHtml(evaluation_of_ai)" class="text-body-1 no-selected"></p>
         </v-card-text>
     </v-card>
 

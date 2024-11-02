@@ -1,8 +1,9 @@
 import { fetchSecure } from "@/http/connection/fetchHTTP"
 import Tema from "@/http/api/Tema"
 
-class ActividadTema {
+class CuestionarioIsTemaOfAI {
     constructor() {
+
         this.endpoint = {
             generate_questions_ai: { url: "internado-root/ai-generate-questions/", method: "POST" },
             evaluate_questions_ai: { url: "internado-root/ai-evaluate-questions/", method: "POST" },
@@ -27,26 +28,26 @@ class ActividadTema {
             })
 
             if (!resolve.ok) {
-                throw new Error('Error al generar el cuestionario.');
+                throw new Error('Error al generar el cuestionario.')
             }
-            const reader = resolve.body.getReader();
-            const decoder = new TextDecoder("utf-8");
+            const reader = resolve.body.getReader()
+            const decoder = new TextDecoder("utf-8")
 
             // Retornamos el reader para que pueda ser utilizado en el componente
             return { reader, decoder }
         } catch (error) {
-            throw new Error(error);
+            throw new Error(error)
         }
     }
     //califica el cuestionario por la IA
-    async evaluateQuestionsAI(questions = [], tema = new Tema(), is_signal = null) {
+    async evaluateQuestionsAI(is_questionary = [], tema = new Tema(), is_signal = null) {
         try {
             const evaluate_questions_ai = this.endpoint.evaluate_questions_ai // endpoint
             const resolve = await fetchSecure(evaluate_questions_ai.url, {
                 method: evaluate_questions_ai.method,
                 ...this.config,
                 body: JSON.stringify({
-                    questions: questions,
+                    questionary: is_questionary,
                     tema: { ...tema.collectPayload() }
                 }),
                 signal: is_signal
@@ -55,16 +56,18 @@ class ActividadTema {
             if (!resolve.ok) {
                 throw new Error("Error al evaluar el cuestionario.");
             }
-            const reader = resolve.body.getReader(); // Para leer los fragmentos
-            const decoder = new TextDecoder("utf-8");
+            const reader = resolve.body.getReader() // Para leer los fragmentos
+            const decoder = new TextDecoder("utf-8")
 
             // Retornamos el reader para que pueda ser utilizado en el componente
-            return { reader, decoder };
+            return { reader, decoder }
         } catch (error) {
-            throw new Error(error);
+            throw new Error(error)
         }
     }
-}
 
-export default ActividadTema
+}// class
+
+export default CuestionarioIsTemaOfAI
+
 

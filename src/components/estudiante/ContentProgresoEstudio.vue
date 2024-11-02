@@ -56,21 +56,21 @@ onMounted(() => {
     <v-card class="mt-5">
         <v-card-text>
             <v-btn color="info" variant="elevated" class="ma-1" @click="loadProgresoEstudio">
-                <v-icon icon="mdi-refresh" start/> 
+                <v-icon icon="mdi-refresh" start />
                 Actualizar
             </v-btn>
 
             <v-data-table :hover="true" :items="data" :headers="columns" :loading="loading_data_table"
                 :items-per-page-options="items_per_page_options" :show-current-page="true" :fixed-header="true"
-                :height="730" :sort-by="[{ key: 'id', order: 'desc' }]">
+                :height="700" :sort-by="[{ key: 'id', order: 'desc' }]">
                 <template v-slot:loading>
-                    <v-skeleton-loader type="table-row@11"></v-skeleton-loader>
+                    <v-skeleton-loader type="table-row@14"></v-skeleton-loader>
                 </template>
 
                 <template v-slot:item.progress="{ item }">
                     <div style="min-width:250px">
-                        <v-progress-linear  :color="getProgressColor(item.progress)"
-                            height="25" :model-value="item.progress * 100" striped>
+                        <v-progress-linear :color="getProgressColor(item.progress)" height="15"
+                            :model-value="item.progress * 100" striped>
                             <strong> {{ item.progress * 100 }} %</strong>
                         </v-progress-linear>
                     </div>

@@ -109,6 +109,7 @@ onBeforeUnmount(() => {
           </v-tab>
         </v-tabs>
       </div>
+      
       <!-- Contenido de estudio, pdf y actividad -->
       <div class="flex-grow-1" style="width: 80%;">
         <component v-if="!loading_tema_content" :is="is_component" :p_item_tema="item_tema"
