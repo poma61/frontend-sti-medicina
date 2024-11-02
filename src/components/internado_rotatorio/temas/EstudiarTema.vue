@@ -94,8 +94,8 @@ const handlePdfInit = (pdf) => {
 }
 
 onBeforeMount(() => {
-    // Ejecutamos la función cada 5 minutos (300000 ms) (1 min = 60000 ms)
-    interval_id_register.value = setInterval(registerProgresoEstudio, 300000)
+    // Ejecutamos la función cada 3 minutos (180000 ms) (1 min = 60000 ms)
+    interval_id_register.value = setInterval(registerProgresoEstudio, 180000)
 })
 
 onBeforeUnmount(() => {

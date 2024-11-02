@@ -106,7 +106,7 @@ const evaluateAllQuestions = () => {
 
 const filterSpecialChars = (event, index) => {
     // Expresión regular que permite letras, números, puntos y guiones
-    const regex = /[^a-zA-Z0-9. -]/g
+    const regex = /[^a-zA-Z0-9. \-\n]/g
     const value = event.target.value
     const filtered_value = value.replace(regex, "")
     questionary.value[index].respuesta = filtered_value
@@ -153,9 +153,9 @@ onBeforeUnmount(() => {
             </p>
             <div v-for="(item, index) in questionary" :key="index">
                 <p class="text-body-1 no-selected">{{ item.pregunta }}</p>
-                <v-text-field v-model="item.respuesta" placeholder="Escribe tu respuesta..." clearable
+                <v-textarea v-model="item.respuesta" placeholder="Escribe tu respuesta..." clearable
                     :disabled="disable_text_field" color="indigo-lighten-1" maxlength="200" counter
-                    @input="filterSpecialChars($event, index)" />
+                    @input="filterSpecialChars($event, index)" rows="2" max-rows="4"/>
             </div>
         </v-card-text>
 
@@ -189,3 +189,4 @@ onBeforeUnmount(() => {
     user-select: none !important;
 }
 </style>
+
