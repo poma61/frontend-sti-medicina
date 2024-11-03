@@ -16,10 +16,9 @@ onBeforeMount(async () => {
 
 <template>
     <!-- KeepAlive => Guarda en cache algunos valores del commponente para volver  NO volver a renderizar desde cero -->
-    <!-- al llegar a max:10 libera cache 
- -->
+    <!-- al llegar a max:10 libera cache -->
     <KeepAlive :max="10">
-        <component :is="NavigationDrawer" />
+        <NavigationDrawer />
     </KeepAlive>
 
     <v-main class="ma-3">
@@ -27,3 +26,4 @@ onBeforeMount(async () => {
     </v-main>
 
 </template>
+

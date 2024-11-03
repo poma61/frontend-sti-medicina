@@ -1,6 +1,6 @@
 <script setup>
 import BaseTemplate from '@/layouts/BaseTemplate.vue';
-import ContentProgresoEstudio from '@/components/estudiante/ContentProgresoEstudio.vue';
+import ContentProgresoEstudio from '@/components/estudiante/progreso_estudio/ContentProgresoEstudio.vue';
 </script>
 <template>
     <BaseTemplate>

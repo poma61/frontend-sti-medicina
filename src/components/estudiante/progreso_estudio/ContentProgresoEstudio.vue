@@ -3,10 +3,15 @@ import { toastError } from '@/composables/toastify';
 import ProgresoEstudio from '@/http/api/ProgresoEstudio';
 import { onMounted, ref } from 'vue';
 import { format, parseISO } from 'date-fns';
+import ContentResultadoCuestonarioAndEvaluadoOfAI from '@/components/estudiante/progreso_estudio/ContentResultadoCuestonarioAndEvaluadoOfAI.vue';
 
 const loading_data_table = ref(false)
 const data = ref([])
-
+const is_component = ref({
+    data_table: false,
+    resultado_cuestonario_and_evaluado_of_ai: false
+})
+const item_progreso_estudio = ref({})
 const items_per_page_options = ref([
     { value: 10, title: '10' },
     { value: 25, title: '25' },
@@ -21,7 +26,7 @@ const columns = ref([
     { title: 'Acciones', key: 'actions', align: "center" },
 ])
 
-const loadProgresoEstudio = () => {
+const loadData = () => {
     loading_data_table.value = "info"
     setTimeout(async () => {
         const progreso_estudio = new ProgresoEstudio()
@@ -45,24 +50,54 @@ const getProgressColor = (progress) => {
     return 'red'
 }
 
+const viewResultadoCuestonarioAndEvaluadoOfAI = (item) => {
+    item_progreso_estudio.value = { ...item }
+    handleComponent("resultado-cuestonario-and-evaluado-of-ai")
+}
+
+const handleComponent = (component) => {
+    switch (component) {
+        case "data-table":
+            is_component.value.data_table = true
+            is_component.value.resultado_cuestonario_and_evaluado_of_ai = false
+            break
+        case "resultado-cuestonario-and-evaluado-of-ai":
+            is_component.value.resultado_cuestonario_and_evaluado_of_ai = true
+            is_component.value.data_table = false
+            break
+        default:
+            console.error("Valor no encontrado en handleComponent")
+            break
+    }
+}
 
 onMounted(() => {
-    loadProgresoEstudio()
+    handleComponent("data-table")
+    loadData()
 })
 </script>
 
 
 <template>
-    <v-card class="mt-5">
-        <v-card-text>
-            <v-btn color="info" variant="elevated" class="ma-1" @click="loadProgresoEstudio">
-                <v-icon icon="mdi-refresh" start />
-                Actualizar
-            </v-btn>
+    <div class="mt-4 d-flex flex-wrap">
+        <v-btn color="secondary" variant="elevated" class="ma-1" @click="handleComponent('data-table')"
+            :disabled="is_component.data_table">
+            <v-icon icon="mdi-table" start />
+            Tablero
+        </v-btn>
 
+        <v-btn color="secondary" variant="elevated" class="ma-1" @click="loadData"
+            :disabled="is_component.resultado_cuestonario_and_evaluado_of_ai">
+            <v-icon icon="mdi-refresh" start />
+            Actualizar
+        </v-btn>
+    </div>
+
+    <v-card class="mt-4" v-show="is_component.data_table">
+        <v-card-text>
             <v-data-table :hover="true" :items="data" :headers="columns" :loading="loading_data_table"
                 :items-per-page-options="items_per_page_options" :show-current-page="true" :fixed-header="true"
-                :height="700" :sort-by="[{ key: 'id', order: 'desc' }]">
+                :height="650" :sort-by="[{ key: 'id', order: 'desc' }]">
                 <template v-slot:loading>
                     <v-skeleton-loader type="table-row@14"></v-skeleton-loader>
                 </template>
@@ -75,8 +110,8 @@ onMounted(() => {
                         </v-progress-linear>
                     </div>
                 </template>
-                <template v-slot:item.tiempo_est="{ item }">
 
+                <template v-slot:item.tiempo_est="{ item }">
                     <v-chip prepend-icon="mdi-clock" color="cyan-darken-3" label> {{ item.tiempo_est }} </v-chip>
                 </template>
 
@@ -87,8 +122,9 @@ onMounted(() => {
                 </template>
 
                 <template v-slot:item.actions="{ item }">
-                    <v-btn @click="item" color="success" class="ma-1" variant="elevated">
-                        <v-icon icon="mdi-file"></v-icon>
+                    <v-btn @click="viewResultadoCuestonarioAndEvaluadoOfAI(item)" color="success" class="ma-1"
+                        variant="elevated">
+                        <v-icon icon="mdi-text-box-check"></v-icon>
                     </v-btn>
                 </template>
 
@@ -96,14 +132,7 @@ onMounted(() => {
         </v-card-text>
     </v-card>
 
-
-    <v-overlay v-model="loading" class="align-center justify-center" persistent>
-        <div class="text-center">
-            <v-progress-circular color="cyan-darken-1" indeterminate size="100"></v-progress-circular>
-            <p class="text-white text-h6">
-                Cargando datos...
-            </p>
-        </div>
-    </v-overlay>
+    <ContentResultadoCuestonarioAndEvaluadoOfAI v-if="is_component.resultado_cuestonario_and_evaluado_of_ai"
+        :p_item_progreso_estudio="item_progreso_estudio" />
 
 </template>
