@@ -5,6 +5,7 @@ import { onMounted, ref } from 'vue';
 import { format, parseISO } from 'date-fns';
 import DetailsResultadoCuestonarioAndEvaluadoOfAI from '@/components/estudiante/progreso_estudio/DetailsResultadoCuestonarioAndEvaluadoOfAI.vue';
 
+
 //data
 const props = defineProps(['p_item_progreso_estudio'])
 const data = ref([])
@@ -40,7 +41,15 @@ const closeDialogCuestionario = () => {
 const clear = () => {
     item_cuestonario.value = {}
 }
-//
+const getProgressColor = (progress) => {
+    if (progress >= 0.9) return 'success'
+    if (progress >= 0.7) return 'light-green'
+    if (progress >= 0.5) return 'yellow-darken-4'
+    if (progress >= 0.3) return 'yellow-accent-4'
+    if (progress >= 0.1) return 'red'
+    return 'red'
+}
+
 onMounted(() => {
     loadData()
 })
@@ -48,6 +57,36 @@ onMounted(() => {
 </script>
 
 <template>
+    <v-card style="width: 100%;">
+        <v-card-title class="bg-secondary">
+            <v-icon icon="mdi-arrow-right" start></v-icon> Tema :{{ props.p_item_progreso_estudio.tema.title }}
+        </v-card-title>
+        <v-card-text>
+            <div class="d-flex flex-wrap pa-2 justify-space-around align-center">
+
+                <div style="min-width:300px" class="flex-grow-1 ma-1">
+                    <v-progress-linear :color="getProgressColor(props.p_item_progreso_estudio.progress)" height="15"
+                        :model-value="props.p_item_progreso_estudio.progress * 100" striped>
+                        <strong> {{ props.p_item_progreso_estudio.progress * 100 }} %</strong>
+                    </v-progress-linear>
+                </div>
+
+                <div class="flex-grow-0 ma-1">
+                    <v-chip prepend-icon="mdi-clock" color="cyan-darken-3" label>
+                        Tiempo de Estudio:
+                        {{ props.p_item_progreso_estudio.tiempo_est }}
+                    </v-chip>
+                </div>
+
+                <div class="flex-grow-0 ma-1">
+                    <v-chip prepend-icon="mdi-calendar" color="info" label>
+                       Fecha: {{ format(parseISO(props.p_item_progreso_estudio.ult_actualizacion), "dd/MM/yyyy HH:mm:ss") }}
+                    </v-chip>
+                </div>
+            </div>
+        </v-card-text>
+    </v-card>
+
     <!-- iterator -->
     <v-card class="mt-2 as-container-data-iterator">
         <v-overlay v-model="loading_data_iterator" class="align-center justify-center" persistent contained>
@@ -114,7 +153,6 @@ onMounted(() => {
     </v-card>
     <!-- iterator -->
     <v-dialog v-model="dialog_cuestinario" scrollable persistent fullscreen>
-        
         <DetailsResultadoCuestonarioAndEvaluadoOfAI :p_item_cuestonario="item_cuestonario"
             @toCloseDialogCuestionario="closeDialogCuestionario" />
     </v-dialog>
@@ -130,7 +168,7 @@ ejemplo2:as__data-iterator =>height700px entonces as-container-data-iterator => 
 ========================================== */
 
 .as-container-data-iterator {
-    height: 830px;
+    height: 760px;
 }
 
 .as__data-iterator {
