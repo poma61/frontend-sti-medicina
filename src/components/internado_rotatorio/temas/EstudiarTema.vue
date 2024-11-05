@@ -109,11 +109,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <!-- Se quito para evitar renderizar cada vez porque estamos desarrollando
-     :src="props.p_item_tema.archivo_pdf"
-    -->
+
     <div class="pdf">
-        <PDF :page="current_page" :style="{ transform: `scale(${scale})`, transformOrigin: '0 0' }" :showProgress="true"
+        <PDF :src="props.p_item_tema.archivo_pdf"  :page="current_page" :style="{ transform: `scale(${scale})`, transformOrigin: '0 0' }" :showProgress="true"
             :progressColor="'#87ceeb'" @onPageChange="handlePageChange" @onPdfInit="handlePdfInit"
             @onComplete="handleComplete" :disableStream="true" :disableAutoFetch="true" :disableRange="true" />
     </div>
