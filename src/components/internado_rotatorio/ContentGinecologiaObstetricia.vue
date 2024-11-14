@@ -77,7 +77,7 @@ onMounted(() => {
                                 <v-card-actions>
                                     <v-divider color="orange-darken-1" opacity="0.4"></v-divider>
                                     <v-btn color="orange-darken-1" variant="tonal" class="ma-1" @click="showTema(item.raw)">
-                                        Ver tema
+                                        Estudiar tema
                                         <v-icon icon="mdi-arrow-right-box" end></v-icon>
                                     </v-btn>
                                 </v-card-actions>

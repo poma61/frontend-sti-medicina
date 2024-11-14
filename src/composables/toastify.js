@@ -2,7 +2,7 @@ import { toast } from "vue3-toastify";
 
 const options = {
     position: 'bottom-right',
-    autoClose: 1000,
+    autoClose: 2000,
     theme: "colored", 
     hideProgressBar: true,
     closeOnClick: true,

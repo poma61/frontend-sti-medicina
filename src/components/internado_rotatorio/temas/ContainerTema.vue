@@ -77,7 +77,7 @@ onBeforeUnmount(() => {
 
   <h1 class="text-h6 pa-1 my-3 as-box-shadow bg-secondary">
     <v-icon icon="mdi-arrow-right" start></v-icon>
-    {{ area_parsed }}
+    Area de Estudio | {{ area_parsed }}
   </h1>
 
   <v-card elevation="10">
@@ -109,7 +109,7 @@ onBeforeUnmount(() => {
           </v-tab>
         </v-tabs>
       </div>
-      
+
       <!-- Contenido de estudio, pdf y actividad -->
       <div class="flex-grow-1" style="width: 80%;">
         <component v-if="!loading_tema_content" :is="is_component" :p_item_tema="item_tema"

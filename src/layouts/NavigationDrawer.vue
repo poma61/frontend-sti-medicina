@@ -51,7 +51,7 @@ const byHiddenNavigationDrawer = () => {
         <v-list-group value="Areas">
 
           <template v-slot:activator="{ props }">
-            <v-list-item v-bind="props" title="Areas I.R." prepend-icon="mdi-library-outline" />
+            <v-list-item v-bind="props" title="Internado Rotatorio" prepend-icon="mdi-library-outline" />
           </template>
           <v-list-item prepend-icon="mdi-numeric-1-circle-outline" title="Medicina Interna" value="MedicinaInterna"
             :to="{ name: 'n-ir-medicina-interna' }"
