@@ -5,6 +5,7 @@ import { completeLoadingToast, showLoadingToast, toastError, toastInfo, toastSuc
 import TypingIndicator from '@/components/tutor_ai/TypingIndicator.vue'
 import TutorAI from '@/http/api/TutorAI'
 import HelpDialog from '@/components/tutor_ai/HelpDialog.vue'
+import HistoryChat from '@/components/tutor_ai/HistoryChat.vue'
 
 const messages = ref([
     {
@@ -50,6 +51,9 @@ const closeHelpDialog = () => {
     dialog_help.value = false
 }
 
+const openHelpDialog = () => {
+    dialog_help.value = true
+}
 
 const generateAudioStatus = () => {
     //cambiamos estado de la habilitacion del audio
@@ -179,7 +183,6 @@ const sendMessage = async () => {
     }
 }
 
-
 const checkWordCount = () => {
     // Contar palabras y actualizar el contador
     word_count.value = user_message.value.trim().split(/\s+/).filter(word => word).length;
@@ -260,33 +263,15 @@ onBeforeUnmount(() => {
 
 <template>
 
-    <div class="controls-tutor-ai">
-        <v-tooltip text="Audio TutorAI">
-            <template v-slot:activator="{ props }">
-                <v-btn v-bind="props" :icon="generate_audio_status ? 'mdi-volume-high' : 'mdi-volume-off'"
-                    color="indigo-darken-1" @click="generateAudioStatus" />
-            </template>
-        </v-tooltip>
-
-        <v-tooltip text="Ayuda TutorAI">
-            <template v-slot:activator="{ props }">
-                <v-btn v-bind="props" icon="mdi-help" color="indigo-darken-1" @click="dialog_help = true" />
-            </template>
-        </v-tooltip>
-
-        <v-tooltip text="Nuevo mensaje">
-            <template v-slot:activator="{ props }">
-                <v-btn v-bind="props" icon="mdi-plus" color="indigo-darken-1" @click="newChat" />
-            </template>
-        </v-tooltip>
-    </div>
+    <HistoryChat :p_generate_audio_status="generate_audio_status" @toGenerateAudioStatus="generateAudioStatus"
+        @toNewChat="newChat" @toOpenHelpDialog="openHelpDialog" />
 
     <!-- Chat menssages -->
     <div class="chat-container">
         <v-list class="is-flex">
             <!-- Mensajes del Chat -->
             <v-list-item v-for="(message, index) in messages" :key="index" :class="getMessageClass(message.role)">
-                <v-card :prepend-icon="message.role == 'assistant' ? 'mdi-atom-variant' : null"
+                <v-card 
                     :append-icon="message.role == 'user' ? 'mdi-account' : null" class="pa-2"
                     :variant="message.role == 'user' ? 'tonal' : null">
                     <p v-html="formatTextINHtml(message.content)" class="text-body-1"></p>
@@ -305,13 +290,13 @@ onBeforeUnmount(() => {
                 rows="2" color="cyan-darken-1" ref="textareaRef" @keyup.enter="handleEnterKey" auto-grow :max-rows="6"
                 variant="outlined" class="text-center"
                 :messages="'TutorAI puede cometer errores. Considere verificar la informacion proporcionada.'"
-                @input="checkWordCount" :error-messages="word_count_message"
-                :maxlength="max_words" counter>
+                @input="checkWordCount" :error-messages="word_count_message" :maxlength="max_words" counter>
             </v-textarea>
             <v-btn class="ma-1" color="cyan-darken-1" icon="mdi-send" @click="sendMessage"
                 :disabled="loading || !user_message" :loading="loading" />
         </div>
     </v-footer>
+
     <v-dialog v-model="dialog_help" max-width="1000px" scrollable>
         <HelpDialog @toCloseHelpDialog="closeHelpDialog" />
     </v-dialog>
@@ -343,20 +328,9 @@ onBeforeUnmount(() => {
     align-self: start;
 }
 
-.controls-tutor-ai {
-    position: fixed;
-    top: 50px;
-    width: fit-content;
-    right: 0px;
-    padding: 10px;
-    display: flex;
-    z-index: 999;
-    gap: 5px;
-    flex-direction: column;
-}
 
 .chat-container {
-    margin: 0px 150px;
+    margin: 0px 100px;
 }
 
 /* Para dispositivos con un ancho de pantalla máximo de 1000px */

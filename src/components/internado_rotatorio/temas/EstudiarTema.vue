@@ -93,6 +93,11 @@ const handlePdfInit = (pdf) => {
     totalPages.value = pdf.numPages;
 }
 
+onMounted(() => {
+    //iniciamos progreso de estudio por primera vez
+    registerProgresoEstudio()
+})
+
 onBeforeMount(() => {
     // Ejecutamos la función cada 3 minutos (180000 ms) (1 min = 60000 ms)
     interval_id_register.value = setInterval(registerProgresoEstudio, 180000)
@@ -103,7 +108,6 @@ onBeforeUnmount(() => {
     if (interval_id_register.value) {
         clearInterval(interval_id_register.value)
     }
-
 })
 
 </script>
@@ -111,7 +115,8 @@ onBeforeUnmount(() => {
 <template>
 
     <div class="pdf">
-        <PDF :src="props.p_item_tema.archivo_pdf"  :page="current_page" :style="{ transform: `scale(${scale})`, transformOrigin: '0 0' }" :showProgress="true"
+        <PDF :src="props.p_item_tema.archivo_pdf" :page="current_page"
+            :style="{ transform: `scale(${scale})`, transformOrigin: '0 0' }" :showProgress="true"
             :progressColor="'#87ceeb'" @onPageChange="handlePageChange" @onPdfInit="handlePdfInit"
             @onComplete="handleComplete" :disableStream="true" :disableAutoFetch="true" :disableRange="true" />
     </div>

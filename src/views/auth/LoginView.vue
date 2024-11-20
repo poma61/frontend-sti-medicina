@@ -21,7 +21,7 @@ const login = () => {
     const auth = useAuth()
     const auth_success = await auth.loginUser(user.value, password.value);
     if (auth_success.api_status) {
-           
+
       router.push({ name: 'n-home' });
     } else {
       toastError(auth_success.detail)
@@ -46,7 +46,9 @@ const filterSpaces = (event) => {
 
 // Computed para habilitar o deshabilitar el botón
 const canSubmit = computed(() => {
-  return user.value.length > 0 && password.value.length > 0;
+  if (user.value != null && password.value != null) {
+    return user.value.length > 0 && password.value.length > 0
+  }
 })
 </script>
 
@@ -60,6 +62,7 @@ const canSubmit = computed(() => {
           <p class="text-center px-4">Sistema Tutor Inteligente</p>
         </div>
         <v-form @submit.prevent="login" class="pa-10 as-form">
+
           <v-text-field prepend-inner-icon="mdi-account" v-model="user" :readonly="loading" :rules="[required]"
             class="mb-2" clearable label="Usuario" placeholder="Escriba su usuario..." color="light-blue-darken-3"
             @input="filterSpecialChars($event)"></v-text-field>
