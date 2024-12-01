@@ -11,7 +11,7 @@ const props = defineProps(['p_item_estudiante'])
 
 <template>
     <v-card>
-        <v-card-title class="bg-cyan-darken-1 pa-4">
+        <v-card-title class="bg-cyan-darken-1 pa-4 text-wrap">
 
             <h6 class="text-h6">
                 <v-icon icon="mdi-account-school" start></v-icon>

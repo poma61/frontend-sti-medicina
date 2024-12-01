@@ -100,8 +100,8 @@ const router = createRouter({
       ]
     },
     {
-      path: "/area-internado-rotatorio/cirurgia",
-      name: "n-ir-cirurgia",
+      path: "/area-internado-rotatorio/cirugia",
+      name: "n-ir-cirugia",
       component: () => import(/* webpackChunkName "CirurgiaView"*/ "@/views/internado_rotatorio/CirurgiaView.vue"),
       meta: {
         requireAuth: true,

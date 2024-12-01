@@ -14,7 +14,7 @@ const objs_permisos = props.p_list_permisos.filter(
 
 <template>
     <v-card>
-        <v-card-title class="bg-teal-lighten-2 pa-4">
+        <v-card-title class="bg-teal-lighten-2 pa-4 text-wrap">
             <h6 class="text-h6">
                 <v-icon icon="mdi-home-city-outline" start></v-icon>
                 Datos del personal institucional

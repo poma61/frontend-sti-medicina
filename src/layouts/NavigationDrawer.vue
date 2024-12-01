@@ -63,8 +63,8 @@ const drawer_store = useNavigationDrawerStore()
             :to="{ name: 'n-ir-medicina-interna' }"
             :class="{ 'v-list-item--active': route.params.area == 'medicina-interna' }" />
 
-          <v-list-item prepend-icon="mdi-numeric-2-circle-outline" title="Cirurgía" value="Cirurgia"
-            :to="{ name: 'n-ir-cirurgia' }" :class="{ 'v-list-item--active': route.params.area == 'cirurgia' }" />
+          <v-list-item prepend-icon="mdi-numeric-2-circle-outline" title="Cirugía" value="Cirugia"
+            :to="{ name: 'n-ir-cirugia' }" :class="{ 'v-list-item--active': route.params.area == 'cirugia' }" />
 
           <v-list-item prepend-icon="mdi-numeric-3-circle-outline" title="Pediatria" value="Pediatria"
             :to="{ name: 'n-ir-pediatria' }" :class="{ 'v-list-item--active': route.params.area == 'pediatria' }" />
