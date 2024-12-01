@@ -1,24 +1,13 @@
 <script setup>
-import { ref } from 'vue';
+import { useHistoryChatDrawerStore } from '@/stores/useHistoryChatDrawerStore';
 
 const prop = defineProps(["p_generate_audio_status"])
 const emit = defineEmits(["toGenerateAudioStatus", "toNewChat", "toOpenHelpDialog",])
-const drawer = ref(true)
+const history_chat_drawer_store = useHistoryChatDrawerStore()
 
 </script>
 
-
 <template>
-    <!-- 
-    <v-navigation-drawer location="right" v-model="drawer" :rail="false" app color="grey-lighten-3" >
-        <v-divider></v-divider>
-        <v-list density="compact" nav>
-            <v-list-item prepend-icon="mdi-message-text" title="Medico" value="home"></v-list-item>
-            <v-list-item prepend-icon="mdi-message-text" title="Ayuda" value="account"></v-list-item>
-            <v-list-item prepend-icon="mdi-message-text" title="Texto" value="users"></v-list-item>
-        </v-list>
-    </v-navigation-drawer>
--->
     <v-app-bar elevation="0" app style="background-color: transparent;">
         <v-spacer></v-spacer>
 
@@ -45,12 +34,10 @@ const drawer = ref(true)
         </v-tooltip>
         <v-tooltip text="Chats">
             <template v-slot:activator="{ props }">
-                <v-btn v-bind="props" :icon="drawer ? 'mdi-menu-right' : 'mdi-menu-left'" class="ma-1"
-                    @click.stop="drawer = !drawer" variant="elevated" color="indigo-darken-1" />
+                <v-btn v-bind="props" :icon="history_chat_drawer_store.drawer ? 'mdi-menu-right' : 'mdi-menu-left'" class="ma-1"
+                    @click.stop="history_chat_drawer_store.toggleHistoryChatDrawer()" variant="elevated" color="indigo-darken-1" />
             </template>
         </v-tooltip>
 
     </v-app-bar>
-
-
 </template>

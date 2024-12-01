@@ -1,11 +1,12 @@
 <script setup>
 import { ref, onMounted, nextTick, watch, onBeforeUnmount, } from 'vue'
 import DOMPurify from 'dompurify'
-import { completeLoadingToast, showLoadingToast, toastError, toastInfo, toastSuccess } from '@/composables/toastify'
+import { completeLoadingToast, showLoadingToast, toastError, toastInfo } from '@/composables/toastify'
 import TypingIndicator from '@/components/tutor_ai/TypingIndicator.vue'
 import TutorAI from '@/http/api/TutorAI'
 import HelpDialog from '@/components/tutor_ai/HelpDialog.vue'
-import HistoryChat from '@/components/tutor_ai/HistoryChat.vue'
+import BarControls from '@/components/tutor_ai/BarControls.vue'
+import HistoryChatDrawer from '@/components/tutor_ai/HistoryChatDrawer.vue'
 
 const messages = ref([
     {
@@ -263,7 +264,9 @@ onBeforeUnmount(() => {
 
 <template>
 
-    <HistoryChat :p_generate_audio_status="generate_audio_status" @toGenerateAudioStatus="generateAudioStatus"
+    <HistoryChatDrawer />
+
+    <BarControls :p_generate_audio_status="generate_audio_status" @toGenerateAudioStatus="generateAudioStatus"
         @toNewChat="newChat" @toOpenHelpDialog="openHelpDialog" />
 
     <!-- Chat menssages -->
@@ -271,8 +274,7 @@ onBeforeUnmount(() => {
         <v-list class="is-flex">
             <!-- Mensajes del Chat -->
             <v-list-item v-for="(message, index) in messages" :key="index" :class="getMessageClass(message.role)">
-                <v-card 
-                    :append-icon="message.role == 'user' ? 'mdi-account' : null" class="pa-2"
+                <v-card :append-icon="message.role == 'user' ? 'mdi-account' : null" class="pa-2"
                     :variant="message.role == 'user' ? 'tonal' : null">
                     <p v-html="formatTextINHtml(message.content)" class="text-body-1"></p>
                 </v-card>

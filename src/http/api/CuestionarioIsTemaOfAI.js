@@ -28,7 +28,7 @@ class CuestionarioIsTemaOfAI {
             })
 
             if (!resolve.ok) {
-                throw new Error('Error al generar el cuestionario.')
+                throw new Error('TutorAI fue deshabilitado.')
             }
             const reader = resolve.body.getReader()
             const decoder = new TextDecoder("utf-8")
@@ -54,7 +54,7 @@ class CuestionarioIsTemaOfAI {
             })
 
             if (!resolve.ok) {
-                throw new Error("Error al evaluar el cuestionario.");
+                throw new Error("TutorAI fue deshabilitado.");
             }
             const reader = resolve.body.getReader() // Para leer los fragmentos
             const decoder = new TextDecoder("utf-8")

@@ -6,6 +6,8 @@ import { toastError } from '@/composables/toastify'
 import app from '@/config/app'
 import { useThemeStore } from '@/stores/useThemeStore'
 import { useTime } from 'vue-timer-hook'
+import { useNavigationDrawerStore } from "@/stores/useNavigationDrawerStore";
+
 
 //data
 const loading_logout = ref(false)
@@ -16,6 +18,7 @@ const dialog = ref(false)
 const router = useRouter()
 const theme_store = useThemeStore()
 const time = useTime()
+
 
 const authLogout = () => {
     dialog.value = false
@@ -34,9 +37,13 @@ const authLogout = () => {
     }, 200)
 }
 
+
+const drawer_store = useNavigationDrawerStore()
+
 const reloadPage = () => {
     //recargar la pagina completa
     router.go(0)
+
 }
 
 const formatTime = (unit) => {
@@ -45,8 +52,8 @@ const formatTime = (unit) => {
 </script>
 
 <template>
-    <v-app-bar app color="cyan-darken-3" height="50" :elevation="10">
-        <v-app-bar-nav-icon @click.stop="emit('byHiddenNavigationDrawerEmit')"></v-app-bar-nav-icon>
+    <v-app-bar app color="cyan-darken-3" height="50" :elevation="10" >
+        <v-app-bar-nav-icon @click.stop="drawer_store.toggleNavigationDrawer()"></v-app-bar-nav-icon>
         <v-toolbar-title>
             <v-chip class="mx-1" label>
                 <v-icon icon="mdi-account-check-outline" color="deep-purple-darken-1"></v-icon>

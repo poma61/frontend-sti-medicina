@@ -24,7 +24,7 @@ class TutorAI {
                 signal: is_signal
             })
             if (!resolve.ok) {
-                throw new Error("No se puede estabelecer comunicacion con TutorAI.")
+                throw new Error("TutorAI fue deshabilitado.")
             }
 
             const reader = resolve.body.getReader()

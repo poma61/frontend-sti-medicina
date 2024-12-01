@@ -54,7 +54,7 @@ const canSubmit = computed(() => {
 
 <template>
   <div class="as-content">
-    <div class="as-content-login">
+    <div class="as-content-login animate__animated animate__fadeInDown">
       <h1 class="text-h5 pa-5 text-center is-title">InternAI Tutor</h1>
       <div class="as-login">
         <div class="info-content">

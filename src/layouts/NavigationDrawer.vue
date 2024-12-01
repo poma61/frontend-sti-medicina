@@ -1,29 +1,35 @@
 <script setup>
 import AppBar from "@/layouts/AppBar.vue"
-import { ref } from "vue"
+import { ref, watchEffect } from "vue"
 import { usePermission, useUser } from "@/stores/useAuthenticateStore";
 import { useRoute } from "vue-router"
 import app from "@/config/app"
-import logo from "@/assets/images/logo-medicina.png"
+import icono from "@/assets/images/icons/icono-medicina.png"
+import { useNavigationDrawerStore } from "@/stores/useNavigationDrawerStore";
 
 const route = useRoute() // Contiene informacion sobre la ruta actual
 const open = ref(["Areas"])
 const use_permission = usePermission()
 const user_store = useUser()
 
-//data
-const drawer = ref(true)
-//methods
-const byHiddenNavigationDrawer = () => {
-  drawer.value = !drawer.value
-}
+const drawer_store = useNavigationDrawerStore()
+
+// watchEffect(() => {
+// Verifica si el dispositivo es móvil
+//if (window.innerWidth <= 1000) {
+// Cierra el drawer cuando cambia la ruta
+// drawer_store.setNavigationDrawer(false)
+//}
+//})
+
 </script>
 
 <template>
 
-  <v-navigation-drawer v-model="drawer" app class="as-navigation-drawer">
+  <v-navigation-drawer v-model="drawer_store.drawer" app class="as-navigation-drawer" width="260"
+    mobile-breakpoint="md" @update:model-value="drawer_store.setNavigationDrawer($event)" >
     <div class="d-flex flex-column justify-center align-center">
-      <v-list-item :prepend-avatar="logo" title="InternAI" nav>
+      <v-list-item :prepend-avatar="icono" title="InternAI" nav>
       </v-list-item>
     </div>
     <v-divider></v-divider>
@@ -77,7 +83,7 @@ const byHiddenNavigationDrawer = () => {
       <v-list-item prepend-icon="mdi-progress-clock" title="Pogreso de estudio" value="PogresoDeEstudio"
         v-if="user_store.user.user_type == 'estudiante'" :to="{ name: 'n-progreso-estudio' }" />
 
-      <v-list-item prepend-icon="mdi-message-processing" title="TutorAI" value="TutorAI" :to="{ name: 'n-tutorai' }" />
+      <v-list-item prepend-icon="mdi-doctor" title="TutorAI" value="TutorAI" :to="{ name: 'n-tutorai' }" />
 
       <!-- parte administrativo -->
       <v-divider class="border-opacity-25 my-2"></v-divider>
@@ -95,5 +101,5 @@ const byHiddenNavigationDrawer = () => {
 
   </v-navigation-drawer>
 
-  <AppBar @byHiddenNavigationDrawerEmit="byHiddenNavigationDrawer" :p_user="user_store.user" />
+  <AppBar :p_user="user_store.user" />
 </template>
