@@ -65,7 +65,7 @@ onMounted(() => {
                     <v-row justify="center">
                         <v-col v-for="(item, index) in items" :key="index" cols="auto" md="4">
 
-                            <v-card class="pa-3" elevation="4" min-height="240px">
+                            <v-card class="pa-3" elevation="4" min-height="230px">
                                 <v-card-title>
                                     {{ item.raw.title }}
                                 </v-card-title>
