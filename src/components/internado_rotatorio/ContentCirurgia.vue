@@ -70,7 +70,6 @@ onMounted(() => {
                                     {{ item.raw.title }}
                                 </v-card-title>
                                 <v-card-text>
-
                                     {{ item.raw.description }}
                                 </v-card-text>
 

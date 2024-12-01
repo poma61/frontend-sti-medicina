@@ -26,7 +26,7 @@ const drawer_store = useNavigationDrawerStore()
 
 <template>
 
-  <v-navigation-drawer v-model="drawer_store.drawer" app class="as-navigation-drawer" width="260"
+  <v-navigation-drawer v-model="drawer_store.drawer" app class="as-navigation-drawer" width="265"
     mobile-breakpoint="md" @update:model-value="drawer_store.setNavigationDrawer($event)" >
     <div class="d-flex flex-column justify-center align-center">
       <v-list-item :prepend-avatar="icono" title="InternAI" nav>
