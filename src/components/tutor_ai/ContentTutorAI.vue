@@ -263,9 +263,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-
-    <HistoryChatDrawer />
-
+<!--   <HistoryChatDrawer /> -->
+  
     <BarControls :p_generate_audio_status="generate_audio_status" @toGenerateAudioStatus="generateAudioStatus"
         @toNewChat="newChat" @toOpenHelpDialog="openHelpDialog" />
 

@@ -32,12 +32,13 @@ const history_chat_drawer_store = useHistoryChatDrawerStore()
                     @click="emit('toNewChat')" />
             </template>
         </v-tooltip>
+        <!--   
         <v-tooltip text="Chats">
             <template v-slot:activator="{ props }">
                 <v-btn v-bind="props" :icon="history_chat_drawer_store.drawer ? 'mdi-menu-right' : 'mdi-menu-left'" class="ma-1"
                     @click.stop="history_chat_drawer_store.toggleHistoryChatDrawer()" variant="elevated" color="indigo-darken-1" />
             </template>
         </v-tooltip>
-
+       -->
     </v-app-bar>
 </template>

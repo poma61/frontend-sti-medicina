@@ -154,7 +154,7 @@ onBeforeUnmount(() => {
             <div v-for="(item, index) in questionary" :key="index">
                 <p class="text-body-1 no-selected">{{ item.pregunta }}</p>
                 <v-textarea v-model="item.respuesta" placeholder="Escribe tu respuesta..." clearable
-                    :disabled="disable_text_field" color="indigo-lighten-1" maxlength="200" counter
+                    :disabled="disable_text_field" color="indigo-lighten-1" maxlength="150" counter
                     @input="filterSpecialChars($event, index)" rows="2" max-rows="4"/>
             </div>
         </v-card-text>
