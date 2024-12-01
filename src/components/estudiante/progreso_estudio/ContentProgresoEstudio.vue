@@ -6,6 +6,7 @@ import { format, parseISO } from 'date-fns';
 import ContentResultadoCuestonarioAndEvaluadoOfAI from '@/components/estudiante/progreso_estudio/ContentResultadoCuestonarioAndEvaluadoOfAI.vue';
 
 const loading_data_table = ref(false)
+const search_data_table = ref("")
 const data = ref([])
 const is_component = ref({
     data_table: false,
@@ -95,9 +96,12 @@ onMounted(() => {
 
     <v-card class="mt-4" v-show="is_component.data_table">
         <v-card-text>
-            <v-data-table :hover="true" :items="data" :headers="columns" :loading="loading_data_table"
-                :items-per-page-options="items_per_page_options" :show-current-page="true" :fixed-header="true"
-                :height="650" :sort-by="[{ key: 'id', order: 'desc' }]">
+            <v-text-field v-model="search_data_table" append-inner-icon="mdi-magnify" clearable label="Buscar..."
+                color="secondary" />
+
+            <v-data-table :search="search_data_table" :hover="true" :items="data" :headers="columns"
+                :loading="loading_data_table" :items-per-page-options="items_per_page_options" :show-current-page="true"
+                :fixed-header="true" :height="650" :sort-by="[{ key: 'id', order: 'desc' }]">
                 <template v-slot:loading>
                     <v-skeleton-loader type="table-row@14"></v-skeleton-loader>
                 </template>

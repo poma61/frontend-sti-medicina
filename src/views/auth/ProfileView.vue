@@ -2,21 +2,22 @@
 import BaseTemplate from '@/layouts/BaseTemplate.vue';
 import app from "@/config/app";
 import { useUser } from "@/stores/useAuthenticateStore";
-import {  ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { toastError, toastSuccess } from "@/composables/toastify";
 
+
 //data
+const user_store = useUser()
 const loading_save = ref(false)
-const update_auth_user_data = ref({
-  email: "",
-  user: "",
+const auth_user = ref({
+  email: user_store.user.email,
+  user: user_store.user.user,
   password: "",
   new_password: "",
   confirm_new_password: "",
   picture: []
 })
 const form = ref(null)
-const user_store = useUser()
 
 const serializer_errors_validate = ref({});
 const show_new_password = ref(false);
@@ -26,7 +27,7 @@ const src_view_picture = ref(null)
 
 // ************ methods
 const viewImage = () => {
-  const archivo = update_auth_user_data.value.picture;
+  const archivo = auth_user.value.picture;
 
   if (archivo) {
     const reader = new FileReader()
@@ -40,20 +41,20 @@ const viewImage = () => {
 const filterSpecialChars = (event) => {
   const value = event.target.value
   const filtered_value = value.replace(/[^A-Za-z0-9]/g, "") // Remueve caracteres especiales y espacios
-  update_auth_user_data.value.user = filtered_value
+  auth_user.value.user = filtered_value
 }
 
 const filterSpaces = (event, field) => {
   const value = event.target.value;
   const filtered_value = value.replace(/\s/g, ""); // Elimina todos los espacios
   if (field == "password") {
-    update_auth_user_data.value.password = filtered_value;
+    auth_user.value.password = filtered_value;
   }
   if (field == "new_password") {
-    update_auth_user_data.value.new_password = filtered_value;
+    auth_user.value.new_password = filtered_value;
   }
   if (field == "confirm_new_password") {
-    update_auth_user_data.value.confirm_new_password = filtered_value;
+    auth_user.value.confirm_new_password = filtered_value;
   }
 }
 
@@ -61,7 +62,7 @@ const updateAuthUser = () => {
   loading_save.value = true // deshabilitar los campos
   setTimeout(async () => {
     const user = useUser()
-    const response = await user.updateUser(Object.assign({}, update_auth_user_data.value))
+    const response = await user.updateUser(Object.assign({}, auth_user.value))
     loading_save.value = false //una vez procesado volvemos habilitar los campos
     if (response.api_status) {
       toastSuccess(response.detail)
@@ -77,12 +78,12 @@ const updateAuthUser = () => {
 const clear = () => {
   form.value.reset() // limpiar formulario evita que salten los rules
   serializer_errors_validate.value = {}
-  update_auth_user_data.value.email = "",
-    update_auth_user_data.value.user = "",
-    update_auth_user_data.value.password = "",
-    update_auth_user_data.value.new_password = "",
-    update_auth_user_data.value.confirm_new_password = "",
-    update_auth_user_data.value.picture = {}
+  auth_user.value.email = "",
+    auth_user.value.user = "",
+    auth_user.value.password = "",
+    auth_user.value.new_password = "",
+    auth_user.value.confirm_new_password = "",
+    auth_user.value.picture = []
 }
 
 const requiredRule = [
@@ -100,7 +101,7 @@ const showSerializerErrors = computed(() => {
 
 const confirmPasswordRule = [
   (value) => !!value || "Campo requerido.",
-  (value) => (value == update_auth_user_data.value.new_password) || "Las contraseñas no coinciden.",
+  (value) => (value == auth_user.value.new_password) || "Las contraseñas no coinciden.",
 ]
 // Cuando rules es un array debe ser computed
 const passwordRules = [
@@ -128,6 +129,12 @@ const emailRules = [
     return (valid_extensions.some((end) => v.endsWith(end)) || "El email debe terminar con .com, .net, .bo, .org, .info, .edu.")
   },
 ]
+
+// Permite actualizar valores al recargar pagina completa
+watch(() => user_store.user, () => {
+  auth_user.value.email = user_store.user.email
+  auth_user.value.user = user_store.user.user
+})
 
 </script>
 
@@ -185,23 +192,23 @@ const emailRules = [
           <v-form ref="form" @submit.prevent="updateAuthUser" class="as-item-profile">
             <h6 class="text-h6 text-center my-2">Datos de usuario</h6>
 
-            <v-text-field v-model="update_auth_user_data.email" :readonly="loading_save" class="mb-3" clearable
+            <v-text-field v-model="auth_user.email" :readonly="loading_save" class="mb-3" clearable
               prepend-inner-icon="mdi-email" label="Email" placeholder="Escriba su email..." color="blue-darken-3"
               :error-messages="showSerializerErrors('email')" :rules="emailRules" />
 
-            <v-text-field v-model="update_auth_user_data.user" :readonly="loading_save" class="mb-3" clearable
+            <v-text-field v-model="auth_user.user" :readonly="loading_save" class="mb-3" clearable
               prepend-inner-icon="mdi-account" label="Usuario" placeholder="Escriba su usuario..." color="blue-darken-3"
               :error-messages="showSerializerErrors('user')" :rules="requiredRule"
               @input="filterSpecialChars($event)" />
 
-            <v-text-field v-model="update_auth_user_data.password" class="mb-3" :readonly="loading_save"
-              label="Contraseña actual" placeholder="Escriba su contraseña..." color="blue-darken-3"
-              prepend-inner-icon="mdi-lock" :append-inner-icon="show_old_password ? 'mdi-eye' : 'mdi-eye-off'"
+            <v-text-field v-model="auth_user.password" class="mb-3" :readonly="loading_save" label="Contraseña actual"
+              placeholder="Escriba su contraseña..." color="blue-darken-3" prepend-inner-icon="mdi-lock"
+              :append-inner-icon="show_old_password ? 'mdi-eye' : 'mdi-eye-off'"
               :type="show_old_password ? 'text' : 'password'" autocomplete="off"
               @click:append-inner="show_old_password = !show_old_password" :rules="requiredRule"
               :error-messages="showSerializerErrors('password')" @input="filterSpaces($event, 'password')" />
 
-            <v-text-field v-model="update_auth_user_data.new_password" class="mb-3" :readonly="loading_save"
+            <v-text-field v-model="auth_user.new_password" class="mb-3" :readonly="loading_save"
               prepend-inner-icon="mdi-lock" label="Nueva contraseña" placeholder="Escriba su contraseña..."
               color="blue-darken-3" :append-inner-icon="show_new_password ? 'mdi-eye' : 'mdi-eye-off'"
               :type="show_new_password ? 'text' : 'password'" autocomplete="off"
@@ -209,7 +216,7 @@ const emailRules = [
               :error-messages="showSerializerErrors('new_password')" :rules="passwordRules"
               @input="filterSpaces($event, 'new_password')" />
 
-            <v-text-field v-model="update_auth_user_data.confirm_new_password" class="mb-3" :readonly="loading_save"
+            <v-text-field v-model="auth_user.confirm_new_password" class="mb-3" :readonly="loading_save"
               prepend-inner-icon="mdi-lock" label="Confirmar contraseña" placeholder="Escriba su contraseña..."
               color="blue-darken-3" :append-inner-icon="show_confirm_new_password ? 'mdi-eye' : 'mdi-eye-off'"
               :type="show_confirm_new_password ? 'text' : 'password'" autocomplete="off"
@@ -217,13 +224,14 @@ const emailRules = [
               :error-messages="showSerializerErrors('confirm_new_password')"
               @input="filterSpaces($event, 'confirm_new_password')" />
 
-            <v-file-input v-model="update_auth_user_data.picture" accept="image/jpeg, image/jpg, image/png" class="mb-3"
+            <v-file-input v-model="auth_user.picture" accept="image/jpeg, image/jpg, image/png" class="mb-3"
               label="Foto" prepend-icon="mdi-camera" :error-messages="showSerializerErrors('picture')"
               :readonly="loading_save" @change="viewImage" :rules="imageRules" show-size />
 
             <div class="text-center">
               <v-btn :loading="loading_save" color="blue-darken-3" type="submit" variant="elevated">
-                <v-icon icon="mdi-checkbox-marked" />&nbsp;Actualizar credenciales
+                <v-icon start icon="mdi-check" />
+                Actualizar
               </v-btn>
             </div>
           </v-form>
