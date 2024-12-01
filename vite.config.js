@@ -49,6 +49,8 @@ export default defineConfig({
         ],
       }, // manifest
       workbox: {
+        // Ruta SPA: todas las solicitudes de navegación van a index.html
+        navigateFallback: '/index.html',
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.destination === 'image',
