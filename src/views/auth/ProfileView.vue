@@ -38,24 +38,12 @@ const viewImage = () => {
   }
 }
 
-const filterSpecialChars = (event) => {
-  const value = event.target.value
-  const filtered_value = value.replace(/[^A-Za-z0-9]/g, "") // Remueve caracteres especiales y espacios
-  auth_user.value.user = filtered_value
-}
 
 const filterSpaces = (event, field) => {
   const value = event.target.value;
   const filtered_value = value.replace(/\s/g, ""); // Elimina todos los espacios
-  if (field == "password") {
-    auth_user.value.password = filtered_value;
-  }
-  if (field == "new_password") {
-    auth_user.value.new_password = filtered_value;
-  }
-  if (field == "confirm_new_password") {
-    auth_user.value.confirm_new_password = filtered_value;
-  }
+  auth_user.value[field] = filtered_value;
+
 }
 
 const updateAuthUser = () => {
@@ -199,7 +187,7 @@ watch(() => user_store.user, () => {
             <v-text-field v-model="auth_user.user" :readonly="loading_save" class="mb-3" clearable
               prepend-inner-icon="mdi-account" label="Usuario" placeholder="Escriba su usuario..." color="blue-darken-3"
               :error-messages="showSerializerErrors('user')" :rules="requiredRule"
-              @input="filterSpecialChars($event)" />
+              @input="filterSpaces($event, 'user')" />
 
             <v-text-field v-model="auth_user.password" class="mb-3" :readonly="loading_save" label="Contraseña actual"
               placeholder="Escriba su contraseña..." color="blue-darken-3" prepend-inner-icon="mdi-lock"

@@ -177,16 +177,11 @@ const capturePhoto = async () => {
 const changeCameraDevice = async (device_id) => {
     await refCamera.value.changeCamera(device_id)
 }
-const filterSpecialChars = (event) => {
-    const value = event.target.value;
-    const filtered_value = value.replace(/[^A-Za-z0-9]/g, ""); // Remueve caracteres especiales y espacios
-    item_estudiante.value.usuario.user = filtered_value;
-}
 
-const filterSpaces = (event) => {
+const filterSpaces = (event, field) => {
     const value = event.target.value;
     const filtered_value = value.replace(/\s/g, ""); // Elimina todos los espacios
-    item_estudiante.value.usuario.password = filtered_value;
+    item_estudiante.value.usuario[field] = filtered_value;
 }
 
 onMounted(() => {
@@ -217,7 +212,7 @@ onMounted(() => {
                     <v-col cols="12" sm="4">
                         <v-text-field v-model="item_estudiante.usuario.user" label="Usuario (*)" autocomplete="off"
                             color="indigo-lighten-1" clearable :error-messages="showSerializerErrors('usuario.user')"
-                            @input="filterSpecialChars" />
+                            @input="filterSpaces($event, 'user')" />
                     </v-col>
 
                     <v-col cols="12" sm="4">
@@ -227,7 +222,7 @@ onMounted(() => {
                             :append-inner-icon="show_password ? 'mdi-eye' : 'mdi-eye-off'"
                             :type="show_password ? 'text' : 'password'" autocomplete="off"
                             @click:append-inner="show_password = !show_password"
-                            :error-messages="showSerializerErrors('usuario.password')" @input="filterSpaces($event)" />
+                            :error-messages="showSerializerErrors('usuario.password')" @input="filterSpaces($event, 'password')" />
                     </v-col>
 
                     <v-col cols="12" sm="4">

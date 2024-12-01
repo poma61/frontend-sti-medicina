@@ -32,16 +32,15 @@ const login = () => {
 
 const required = (value) => !!value || "Campo requerido.";
 
-const filterSpecialChars = (event) => {
-  const value = event.target.value;
-  const filtered_value = value.replace(/[^A-Za-z0-9]/g, ""); // Remueve caracteres especiales y espacios
-  user.value = filtered_value;
-}
-
-const filterSpaces = (event) => {
+const filterSpaces = (event, field) => {
   const value = event.target.value;
   const filtered_value = value.replace(/\s/g, ""); // Elimina todos los espacios
-  password.value = filtered_value;
+
+  if (field == 'user') {
+    user.value = filtered_value;
+  } else if (field == 'password') {
+    password.value = filtered_value;
+  }
 }
 
 // Computed para habilitar o deshabilitar el botón
@@ -65,12 +64,12 @@ const canSubmit = computed(() => {
 
           <v-text-field prepend-inner-icon="mdi-account" v-model="user" :readonly="loading" :rules="[required]"
             class="mb-2" clearable label="Usuario" placeholder="Escriba su usuario..." color="light-blue-darken-3"
-            @input="filterSpecialChars($event)"></v-text-field>
+            @input="filterSpaces($event, 'user')"></v-text-field>
 
           <v-text-field prepend-inner-icon="mdi-lock-outline" v-model="password" :readonly="loading" :rules="[required]"
             label="Contraseña" placeholder="Escriba su contraseña..." color="light-blue-darken-3"
             :append-inner-icon="show ? 'mdi-eye' : 'mdi-eye-off'" :type="show ? 'text' : 'password'" autocomplete="off"
-            @click:append-inner="show = !show" @input="filterSpaces($event)"></v-text-field>
+            @click:append-inner="show = !show" @input="filterSpaces($event, 'password')"></v-text-field>
 
           <v-btn :loading="loading" :disabled="!canSubmit" block color="light-blue-darken-3" size="large" type="submit"
             variant="elevated">
