@@ -54,13 +54,6 @@ const formatTime = (unit) => {
 <template>
     <v-app-bar app color="cyan-darken-3" height="50" :elevation="10" >
         <v-app-bar-nav-icon @click.stop="drawer_store.toggleNavigationDrawer()"></v-app-bar-nav-icon>
-        <v-toolbar-title>
-            <v-chip class="mx-1" label>
-                <v-icon icon="mdi-account-check-outline" color="deep-purple-darken-1"></v-icon>
-            </v-chip>
-
-        </v-toolbar-title>
-
         <v-spacer></v-spacer>
 
         <v-chip label class="mx-1 text-body-1" color="">

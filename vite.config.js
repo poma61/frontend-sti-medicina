@@ -19,7 +19,7 @@ export default defineConfig({
         short_name: 'InternAI',
         description: 'Sistema Tutor Inteligente',
         theme_color: '#00838F',
-        background_color: "#ffffff",
+        background_color: "#00838F",
         display: "standalone",
         orientation: 'portrait',
         lang: "es",
