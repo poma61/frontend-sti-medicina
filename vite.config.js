@@ -23,6 +23,7 @@ export default defineConfig({
         display: "standalone",
         orientation: 'portrait',
         lang: "es",
+        start_url:"/",
         icons: [
           {
             src: "./icons/icono-medicina-192x192.png",
@@ -51,6 +52,9 @@ export default defineConfig({
       workbox: {
         // Ruta SPA: todas las solicitudes de navegación van a index.html
         navigateFallback: '/index.html',
+        navigateFallbackDenylist: [
+          /^\/$/, // Evitar manejar la raíz
+        ],
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.destination === 'image',
